@@ -1,5 +1,7 @@
 import json
 
+from utils import extract_substring
+
 NEGOTIATION_RULES = '''
 Here are some rules (that should also be explained to the other GPT):
 - You can assume that the protocol has a sender and a receiver. Do not worry about how the messages will be delivered, focus only on the content of the messages.
@@ -43,7 +45,7 @@ class SenderNegotiator:
 
             print('Checking if we can extract from:', message)
             print('---------')
-            protocol = extract(message, '<FINALPROTOCOL>', '</FINALPROTOCOL>')
+            protocol = extract_substring(message, '<FINALPROTOCOL>', '</FINALPROTOCOL>')
 
             if protocol is None:
                 print('Could not extract')
@@ -53,8 +55,8 @@ class SenderNegotiator:
                 print(other_message)
                 print()
             else:
-                name = extract(protocol, '<NAME>', '</NAME>')
-                description = extract(protocol, '<DESCRIPTION>', '</DESCRIPTION>')
+                name = extract_substring(protocol, '<NAME>', '</NAME>')
+                description = extract_substring(protocol, '<DESCRIPTION>', '</DESCRIPTION>')
 
                 if name is None:
                     name = 'Unnamed protocol'

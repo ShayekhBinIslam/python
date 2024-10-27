@@ -1,8 +1,13 @@
-class ProtocolPicker:
-    pass
+from sender.memory import SenderMemory
+from sender.negotiator import SenderNegotiator
+from sender.policy import SimpleSenderPolicy
+from sender.programmer import SenderProgrammer
+from sender.protocol_picker import ProtocolPicker
+from sender.querier import Querier
+from sender.executor import Executor
 
 class Sender:
-    def __init__(self, memory, protocol_picker, negotiator, programmer, executor, querier, policy):
+    def __init__(self, memory : SenderMemory, protocol_picker : ProtocolPicker, negotiator : SenderNegotiator, programmer : SenderProgrammer, executor : Executor, querier : Querier, policy : SimpleSenderPolicy):
         self.memory = memory
         self.protocol_picker = protocol_picker
         self.negotiator = negotiator
@@ -11,10 +16,7 @@ class Sender:
         self.querier = querier
         self.policy = policy
 
-    def execute_task(self, task_id, task_data, target, task_schema=None):
-        #if task_schema is None:
-        #    task_schema = self.memory.get_task_schema(task_id)
-
+    def execute_task(self, task_id, task_schema, task_data, target):
         suitable_protocol = self.protocol_picker.get_suitable_protocol(task_id, task_schema)
         self.memory.increment_conversations(task_id, task_data, target)
 
@@ -28,8 +30,9 @@ class Sender:
         if suitable_protocol is None:
             return self.querier.send_query_without_protocol(task_schema, task_data, target)
         else:
-            if self.executor.has_implementation(suitable_protocol):
-                return self.executor.execute_task(task_schema, task_data, target, suitable_protocol)
+            if self.memory.has_implementation(suitable_protocol):
+                routine_path = self.memory.get_implementation_path(suitable_protocol)
+                return self.executor.run_routine(routine_path, task_schema, task_data, target, suitable_protocol)
             else:
                 self.policy.increment_conversations(task_id, task_data, target)
 

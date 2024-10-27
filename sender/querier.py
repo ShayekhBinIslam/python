@@ -1,11 +1,5 @@
-# The querier is a special toolformer that queries a service based on a protocol document.
+# The querier queries a service based on a protocol document.
 # It receives the protocol document and writes the query that must be performed to the system.
-
-import sys
-sys.path.append('.')
-
-import dotenv
-dotenv.load_dotenv()
 
 import json
 import os
@@ -16,7 +10,7 @@ import sys
 from toolformers.base import Tool, StringParameter, parameter_from_openai_api
 from toolformers.unified import make_default_toolformer
 
-from utils import load_protocol_document, send_raw_query, serialize_gemini_data
+from utils import load_protocol_document, send_raw_query
 
 PROTOCOL_QUERIER_PROMPT = 'You are QuerierGPT. You will receive a protocol document detailing how to query a service. Reply with a structured query which can be sent to the service.' \
     'Only reply with the query itself, with no additional information or escaping. Similarly, do not add any additional whitespace or formatting.'
