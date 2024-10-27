@@ -9,7 +9,7 @@ class Suitability(str, Enum):
     UNKNOWN = 'unknown'
 
 
-class SenderMemory:
+class SenderStorage:
     def __init__(self, storage_path=None):
         self.protocols = {}
         self.conversations = {}
