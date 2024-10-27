@@ -1,4 +1,6 @@
 from enum import Enum
+import json
+from pathlib import Path
 
 class Suitability(str, Enum):
     ADEQUATE = 'adequate'
@@ -8,9 +10,29 @@ class Suitability(str, Enum):
 
 
 class SenderMemory:
-    def __init__(self):
+    def __init__(self, storage_path=None):
         self.protocols = {}
         self.conversations = {}
+
+        if storage_path is None:
+            storage_path = './storage/user'
+        
+        storage_path = Path(storage_path)
+
+        self.storage_path = storage_path
+    
+    def save_memory(self):
+        with open(self.storage_path / 'memory.json', 'w') as f:
+            json.dump({
+                'protocols': self.protocols,
+                'conversations': self.conversations
+            }, f)
+    
+    def load_memory(self):
+        with open(self.storage_path / 'memory.json', 'r') as f:
+            data = json.load(f)
+            self.protocols = data['protocols']
+            self.conversations = data['conversations']
     
     def has_implementation(self, task_type, protocol_id):
         if protocol_id not in self.protocols:
@@ -56,3 +78,32 @@ class SenderMemory:
             return 0
         
         return self.conversations[task_id][target]
+    
+    def register_new_protocol(self, protocol_id, source, protocol):
+        self.protocols[protocol_id] = {
+            'sources': [source],
+            'has_implementation': {},
+            'suitability_info': {}
+        }
+
+        with open(self.storage_path / 'protocol_documents' / f'{protocol_id}.json', 'w') as f:
+            f.write(protocol)
+    
+    def register_implementation(self, protocol_id, task_id, implementation):
+        if protocol_id not in self.protocols:
+            return False
+        
+        self.protocols[protocol_id]['has_implementation'][task_id] = True
+
+        with open(self.storage_path / 'implementations' / f'{protocol_id}_{task_id}.py', 'w') as f:
+            f.write(implementation)
+
+        return True
+    
+    def get_implementation_path(self, protocol_id, task_id):
+        return self.storage_path / 'implementations' / f'{protocol_id}_{task_id}.py'
+
+    def load_protocol_document(self, protocol_id):
+        base_folder = self.storage_path / 'protocol_documents'
+        with open(base_folder / f'{protocol_id}.json', 'r') as f:
+            return f.read()

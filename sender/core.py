@@ -19,7 +19,6 @@ class Sender:
         self.memory.increment_conversations(task_id, task_data, target)
 
         if suitable_protocol is None:
-
             if self.policy.should_negotiate_protocol(task_id, task_data, target):
                 protocol_data = self.negotiator.negotiate_protocol_for_task(task_schema, target)
                 # TODO: Upload the protocol to the network
@@ -37,7 +36,7 @@ class Sender:
             if self.policy.should_implement_protocol(task_id, task_data, target):
                 implementation = self.programmer.write_routine_for_task(task_schema, suitable_protocol['document'])
                 #self.network.send_protocol_document(protocol_document, target)
-                self.memory.register_implementation(suitable_protocol, implementation)
+                self.memory.register_implementation(suitable_protocol, task_id, implementation)
 
                 return self.executor.execute_task(task_schema, task_data, target, suitable_protocol)
             else:
