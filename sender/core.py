@@ -1,4 +1,4 @@
-from sender.memory import SenderMemory
+from sender.storage import SenderStorage
 from sender.negotiator import SenderNegotiator
 from sender.policy import SimpleSenderPolicy
 from sender.programmer import SenderProgrammer
@@ -7,7 +7,7 @@ from sender.querier import Querier
 from sender.executor import Executor
 
 class Sender:
-    def __init__(self, memory : SenderMemory, protocol_picker : ProtocolPicker, negotiator : SenderNegotiator, programmer : SenderProgrammer, executor : Executor, querier : Querier, policy : SimpleSenderPolicy):
+    def __init__(self, memory : SenderStorage, protocol_picker : ProtocolPicker, negotiator : SenderNegotiator, programmer : SenderProgrammer, executor : Executor, querier : Querier, policy : SimpleSenderPolicy):
         self.memory = memory
         self.protocol_picker = protocol_picker
         self.negotiator = negotiator
