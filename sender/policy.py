@@ -1,5 +1,7 @@
+from sender.storage import SenderStorage
+
 class SimpleSenderPolicy:
-    def __init__(self, memory, num_conversations_for_protocol, num_conversations_for_implementation):
+    def __init__(self, memory : SenderStorage, num_conversations_for_protocol, num_conversations_for_implementation):
         self.memory = memory
         self.num_conversations_for_protocol = num_conversations_for_protocol
         self.num_conversations_for_implementation = num_conversations_for_implementation

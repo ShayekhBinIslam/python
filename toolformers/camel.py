@@ -3,13 +3,13 @@ import os
 from typing import List
 import warnings
 
-from toolformers.base import Conversation, Toolformer, Tool, send_usage_to_db
+from toolformers.base import Conversation, Toolformer, Tool
 from camel.messages import BaseMessage
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
 from camel.messages import BaseMessage as bm
 from camel.agents import ChatAgent
-from camel.toolkits.openai_function import OpenAIFunction
+from camel.toolkits.function_tool import FunctionTool
 from camel.configs.openai_config import ChatGPTConfig
 
 class CamelConversation(Conversation):
@@ -32,12 +32,6 @@ class CamelConversation(Conversation):
         
         response = self.agent.step(formatted_message)
 
-        #print(response.info)
-        if response.info.get('usage', None) is not None:
-            send_usage_to_db(response.info.get('usage', None), start_time, datetime.datetime.now(), agent_id, self.category, self.toolformer.name)
-        else:
-            warnings.warn('No usage information found in response.')
-
         reply = response.msg.content
 
         if print_output:
@@ -46,12 +40,10 @@ class CamelConversation(Conversation):
         return reply
 
 class CamelToolformer(Toolformer):
-    def __init__(self, model_platform, model_type, model_config_dict, system_prompt, tools, name=None):
+    def __init__(self, model_platform, model_type, model_config_dict, name=None):
         self.model_platform = model_platform
         self.model_type = model_type
         self.model_config_dict = model_config_dict
-        self.system_prompt = system_prompt
-        self.tools = tools
         self._name = name
 
     @property
@@ -61,7 +53,7 @@ class CamelToolformer(Toolformer):
         else:
             return self._name
 
-    def new_conversation(self, category=None) -> Conversation:
+    def new_conversation(self, prompt, tools : List[Tool], category=None) -> Conversation:
         model = ModelFactory.create(
             model_platform=self.model_platform,
             model_type=self.model_type,
@@ -70,8 +62,8 @@ class CamelToolformer(Toolformer):
 
         agent = ChatAgent(
             model=model,
-            system_message=bm.make_assistant_message('system', self.system_prompt),
-            tools=self.tools
+            system_message=bm.make_assistant_message('system', prompt),
+            tools=[FunctionTool(tool.as_executable_function(), openai_tool_schema=tool.as_openai_info()) for tool in tools]
         )
 
         return CamelConversation(self, agent, category)
@@ -84,7 +76,7 @@ def make_openai_toolformer(model_type_internal, system_prompt, tools : List[Tool
     else:
         raise ValueError('Model type must be either "gpt-4o" or "gpt-4o-mini".')
 
-    formatted_tools = [OpenAIFunction(tool.call_tool_for_toolformer, tool.as_openai_info()) for tool in tools]
+    formatted_tools = [FunctionTool(tool.call_tool_for_toolformer, tool.as_openai_info()) for tool in tools]
 
     return CamelToolformer(
         model_platform=ModelPlatformType.OPENAI,

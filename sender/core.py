@@ -1,46 +1,59 @@
-from sender.storage import SenderStorage
-from sender.negotiator import SenderNegotiator
+from toolformers.base import Toolformer
+from common.storage import Storage, JSONStorage
+from sender.components.negotiator import SenderNegotiator
 from sender.policy import SimpleSenderPolicy
-from sender.programmer import SenderProgrammer
+from sender.components.programmer import SenderProgrammer
 from sender.protocol_picker import ProtocolPicker
-from sender.querier import Querier
-from sender.executor import Executor
+from sender.components.querier import Querier
+from common.executor import Executor, UnsafeExecutor
+
+from common.core import Suitability
+
+from toolformers.camel import CamelToolformer
+from camel.types import ModelPlatformType, ModelType
+from camel.configs.openai_config import ChatGPTConfig
+
+class SenderMemory:
+    def __init__(self, storage : Storage):
+        self.storage = storage
+    
+    def get_known_suitable_protocols(self, task_id, target):
+        suitable_protocols = []
+        for protocol_id, protocol_info in self.storage['protocols'].items():
+            if protocol_info['task_id']['target']['suitability'] == Suitability.ADEQUATE:
+                suitable_protocols.append(protocol_id)
+        return suitable_protocols
+
 
 class Sender:
-    def __init__(self, memory : SenderStorage, protocol_picker : ProtocolPicker, negotiator : SenderNegotiator, programmer : SenderProgrammer, executor : Executor, querier : Querier, policy : SimpleSenderPolicy):
-        self.memory = memory
+    def __init__(self, storage : Storage = None, protocol_picker : ProtocolPicker = None, negotiator : SenderNegotiator = None, programmer : SenderProgrammer = None, executor : Executor = None, querier : Querier = None, toolformer: Toolformer = None):
+        if toolformer is None:
+            toolformer = CamelToolformer(ModelPlatformType.OPENAI, ModelType.GPT_4O, {})
+        
+        if storage is None:
+            storage = JSONStorage(path) # TODO
+        if protocol_picker is None:
+            protocol_picker = ProtocolPicker()
+        if negotiator is None:
+            negotiator = SenderNegotiator(toolformer)
+        if programmer is None:
+            programmer = SenderProgrammer(toolformer)
+        if executor is None:
+            executor = UnsafeExecutor()
+        if querier is None:
+            querier = Querier(toolformer)
+        if transporter is None:
+            transporter = SenderTransporter() # TODO
+
+        self.storage = storage
         self.protocol_picker = protocol_picker
         self.negotiator = negotiator
         self.programmer = programmer
         self.executor = executor
         self.querier = querier
-        self.policy = policy
+        self.transporter = transporter
+        #self.toolformer = toolformer
 
     def execute_task(self, task_id, task_schema, task_data, target):
-        suitable_protocol = self.protocol_picker.get_suitable_protocol(task_id, task_schema)
-        self.memory.increment_conversations(task_id, task_data, target)
-
-        if suitable_protocol is None:
-            if self.policy.should_negotiate_protocol(task_id, task_data, target):
-                protocol_data = self.negotiator.negotiate_protocol_for_task(task_schema, target)
-                # TODO: Upload the protocol to the network
-                self.memory.register_new_protocol(protocol_data['id'], protocol_data['source'], protocol_data['document'])
-                suitable_protocol = protocol_data['id']
-
-        if suitable_protocol is None:
-            return self.querier.send_query_without_protocol(task_schema, task_data, target)
-        else:
-            if self.memory.has_implementation(suitable_protocol):
-                routine_path = self.memory.get_implementation_path(suitable_protocol)
-                return self.executor.run_routine(routine_path, task_schema, task_data, target, suitable_protocol)
-            else:
-                self.policy.increment_conversations(task_id, task_data, target)
-
-            if self.policy.should_implement_protocol(task_id, task_data, target):
-                implementation = self.programmer.write_routine_for_task(task_schema, suitable_protocol['document'])
-                #self.network.send_protocol_document(protocol_document, target)
-                self.memory.register_implementation(suitable_protocol, task_id, implementation)
-
-                return self.executor.execute_task(task_schema, task_data, target, suitable_protocol)
-            else:
-                return self.querier.send_query_with_protocol(task_schema, task_data, target, suitable_protocol['id'], suitable_protocol['source'])
+        
+        self.transporter.send()

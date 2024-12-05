@@ -3,8 +3,8 @@
 import json
 import os
 
-from toolformers.unified import make_default_toolformer
-from utils import extract
+from toolformers.base import Toolformer
+from utils import extract_substring
 
 TASK_PROGRAMMER_PROMPT = '''
 You are ProtocolProgrammerGPT. You will act as an intermediate between a machine (that has a certain input and output schema in JSON) \
@@ -38,16 +38,19 @@ def send_query(task_data):
 </IMPLEMENTATION>
 '''
 
+# TODO: Prompts should be key-valued and overridable
 class SenderProgrammer:
+    def __init__(self, toolformer : Toolformer):
+        self.toolformer = toolformer
+
     def write_routine_for_task(self, task_schema, protocol_document):
-        toolformer = make_default_toolformer(TASK_PROGRAMMER_PROMPT, [])
-        conversation = toolformer.new_conversation(category='programming')
+        conversation = self.toolformer.new_conversation(TASK_PROGRAMMER_PROMPT, [], category='programming')
         message = 'JSON schema:\n\n' + json.dumps(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document
 
         for i in range(5):
             reply = conversation.chat(message, print_output=True)
 
-            implementation = extract(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>')
+            implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>')
 
             if implementation is not None:
                 break

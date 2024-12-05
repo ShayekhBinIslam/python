@@ -1,5 +1,6 @@
 import json
 
+from toolformers.base import Toolformer
 from utils import extract_substring
 
 NEGOTIATION_RULES = '''
@@ -27,19 +28,21 @@ Within the body of the tag, add the tags <NAME></NAME> and <DESCRIPTION></DESCRI
 '''
 
 class SenderNegotiator:
-    def negotiate_protocol_for_task(task_schema, target_node):
+    def __init__(self, toolformer : Toolformer, max_rounds : int = 10):
+        self.toolformer = toolformer
+        self.max_rounds = max_rounds
+
+    def negotiate_protocol_for_task(self, task_schema, target_node):
         found_protocol = None
 
         prompt = TASK_NEGOTIATOR_PROMPT + '\nThe JSON schema of the task is the following:\n\n' + json.dumps(task_schema, indent=2)
 
-        toolformer = make_default_toolformer(prompt, [])
-
-        conversation = toolformer.new_conversation(category='negotiation')
+        conversation = self.toolformer.new_conversation(prompt, category='negotiation')
 
         other_message = 'Hello! How may I help you?'
         conversation_id = None
 
-        for i in range(10):
+        for i in range(self.max_rounds):
             print('===NegotiatorGPT===')
             message = conversation.chat(other_message, print_output=True)
 
