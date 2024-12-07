@@ -139,7 +139,7 @@ class Querier:
 
         return found_output
     
-    def send_query(self, task_schema, task_data, protocol_document, callback):
+    def __call__(self, task_schema, task_data, protocol_document, callback):
         query_description = construct_query_description(protocol_document, task_schema, task_data)
         output_parameters = get_output_parameters(task_schema)
 

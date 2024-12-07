@@ -58,5 +58,22 @@ class Sender:
 
 
     def execute_task(self, task_id, task_schema, task_data, target):
+        # TODO: The sender components (querier, programmer, negotiator) should be aware of any tools that are available + additional info.
         
-        self.transporter.send()
+        #self.memory.increment_task_conversations(task_id, target)
+
+        #protocol_document = self.get_protocol(task_id, task_schema, target)
+
+        # TODO: multiround depends on the protocol
+        external_conversation = self.transporter.new_conversation(target, True, None, None)
+
+        def send_query(query):
+            response = external_conversation(query)
+            print('Response to sender:', response)
+            return response
+
+     
+        response = self.querier(task_schema, task_data, None, send_query)
+        external_conversation.close()
+
+        return response
