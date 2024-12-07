@@ -5,6 +5,7 @@ from sender.policy import SimpleSenderPolicy
 from sender.components.programmer import SenderProgrammer
 from sender.protocol_picker import ProtocolPicker
 from sender.components.querier import Querier
+from sender.components.transporter import SenderTransporter, SimpleSenderTransporter
 from common.executor import Executor, UnsafeExecutor
 
 from common.core import Suitability
@@ -26,11 +27,19 @@ class SenderMemory:
 
 
 class Sender:
-    def __init__(self, storage : Storage = None, protocol_picker : ProtocolPicker = None, negotiator : SenderNegotiator = None, programmer : SenderProgrammer = None, executor : Executor = None, querier : Querier = None, toolformer: Toolformer = None):
-        if toolformer is None:
-            toolformer = CamelToolformer(ModelPlatformType.OPENAI, ModelType.GPT_4O, {})
-        
+    def __init__(self, storage : Storage, protocol_picker : ProtocolPicker, negotiator : SenderNegotiator, programmer : SenderProgrammer, executor : Executor, querier : Querier, transporter : SenderTransporter):
+        self.memory = SenderMemory(storage)
+        self.protocol_picker = protocol_picker
+        self.negotiator = negotiator
+        self.programmer = programmer
+        self.executor = executor
+        self.querier = querier
+        self.transporter = transporter
+
+    @staticmethod
+    def make_default(toolformer, storage : Storage = None, protocol_picker : ProtocolPicker = None, negotiator : SenderNegotiator = None, programmer : SenderProgrammer = None, executor : Executor = None, querier : Querier = None, transporter : SenderTransporter = None):
         if storage is None:
+            path = './sender_storage.json'
             storage = JSONStorage(path) # TODO
         if protocol_picker is None:
             protocol_picker = ProtocolPicker()
@@ -43,16 +52,10 @@ class Sender:
         if querier is None:
             querier = Querier(toolformer)
         if transporter is None:
-            transporter = SenderTransporter() # TODO
+            transporter = SimpleSenderTransporter()
+        
+        return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter)
 
-        self.storage = storage
-        self.protocol_picker = protocol_picker
-        self.negotiator = negotiator
-        self.programmer = programmer
-        self.executor = executor
-        self.querier = querier
-        self.transporter = transporter
-        #self.toolformer = toolformer
 
     def execute_task(self, task_id, task_schema, task_data, target):
         
