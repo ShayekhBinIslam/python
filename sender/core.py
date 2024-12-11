@@ -5,7 +5,7 @@ from common.storage import Storage, JSONStorage
 from sender.components.negotiator import SenderNegotiator
 from sender.policy import SimpleSenderPolicy
 from sender.components.programmer import SenderProgrammer
-from sender.protocol_picker import ProtocolPicker
+from sender.components.protocol_picker import ProtocolPicker
 from sender.components.querier import Querier
 from sender.components.transporter import SenderTransporter, SimpleSenderTransporter
 from common.executor import Executor, UnsafeExecutor
@@ -147,7 +147,7 @@ class Sender:
             path = './sender_storage.json'
             storage = JSONStorage(path) # TODO
         if protocol_picker is None:
-            protocol_picker = ProtocolPicker()
+            protocol_picker = ProtocolPicker(toolformer)
         if negotiator is None:
             negotiator = SenderNegotiator(toolformer)
         if programmer is None:
@@ -179,24 +179,41 @@ class Sender:
 
         return protocol
 
+    def get_suitable_protocol(self, task_id : str, task_schema, target : str) -> Optional[Protocol]:
+        # Look in the memory
+        suitable_protocol = self.memory.get_suitable_protocol(task_id, target)
+
+        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > -1: # TODO: Should be configurable
+            protocol_ids = self.memory.get_unclassified_protocols(task_id)
+            protocols = [self.memory.get_protocol(protocol_id) for protocol_id in protocol_ids]
+            suitable_protocol, protocol_evaluations = self.protocol_picker.pick_protocol(task_schema, protocols)
+
+            for protocol_id, evaluation in protocol_evaluations.items():
+                self.memory.set_default_suitability(protocol_id, task_id, evaluation)
+
+        return suitable_protocol
 
     def execute_task(self, task_id, task_schema, task_data, target):
         # TODO: The sender components (querier, programmer, negotiator) should be aware of any tools that are available + additional info.
-        
-        #self.memory.increment_task_conversations(task_id, target)
 
-        #protocol_document = self.get_protocol(task_id, task_schema, target)
+        self.memory.increment_task_conversations(task_id, target)
+
+        protocol = self.get_suitable_protocol(task_id, task_schema, target)
 
         # TODO: multiround depends on the protocol
-        external_conversation = self.transporter.new_conversation(target, True, None, None)
+        external_conversation = self.transporter.new_conversation(
+            target,
+            True,
+            protocol.hash if protocol else None,
+            protocol.sources if protocol else None
+        )
 
         def send_query(query):
             response = external_conversation(query)
             print('Response to sender:', response)
             return response
 
-     
-        response = self.querier(task_schema, task_data, None, send_query)
+        response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
         external_conversation.close()
 
         return response
