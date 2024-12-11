@@ -33,6 +33,19 @@ def compute_hash(s):
 
     return base64.b64encode(b).decode('ascii')
 
+def extract_metadata(text : str):
+    name = extract_substring(text, '<NAME>', '</NAME>')
+    description = extract_substring(text, '<DESCRIPTION>', '</DESCRIPTION>')
+
+    metadata = {}
+
+    if name is not None:
+        metadata['name'] = name
+    if description is not None:
+        metadata['description'] = description
+    
+    return metadata
+
 def encode_as_data_uri(text):
     # Avoid base64, since it's expensive
     return 'data:text/plain;charset=utf-8,' + urllib.parse.quote(text)
