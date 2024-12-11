@@ -7,6 +7,8 @@ from receiver.components.responder import Responder
 from receiver.components.protocol_checker import ReceiverProtocolChecker
 from receiver.components.negotiator import ReceiverNegotiator
 
+from utils import download_and_verify_protocol
+
 
 class Receiver:
     def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, tools: List[Tool], additional_info : str = ''):
@@ -30,7 +32,7 @@ class Receiver:
             responder = Responder(toolformer)
 
         if protocol_checker is None:
-            protocol_checker = ReceiverProtocolChecker()
+            protocol_checker = ReceiverProtocolChecker(toolformer)
 
         if negotiator is None:
             negotiator = ReceiverNegotiator(toolformer)
@@ -41,4 +43,14 @@ class Receiver:
         if protocol_hash == 'negotiation':
             return self.negotiator.create_conversation(self.tools, self.additional_info)
 
-        return self.responder.create_conversation(None, self.tools, self.additional_info)
+        protocol_document = None
+
+        if protocol_hash is not None:
+            # TODO: Check if we already have it
+            for protocol_source in protocol_sources:
+                protocol_document = download_and_verify_protocol(protocol_hash, protocol_source)
+                if protocol_document is not None:
+                    break
+            # TODO: Handle incorrect protocol
+
+        return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
