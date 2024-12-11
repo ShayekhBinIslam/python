@@ -1,5 +1,6 @@
 import json
 
+from common.core import Protocol
 from toolformers.base import Toolformer
 from utils import extract_substring
 
@@ -24,7 +25,7 @@ You will receive a JSON schema of the task that the service must perform. Negoti
 To do so, you will chat with another GPT (role: user) that will negotiate on behalf of the service.
 {NEGOTIATION_RULES}
 Once you are ready to save the protocol, reply wrapping the final version of the protocol, as agreed in your negotiation, between the tags <FINALPROTOCOL> and </FINALPROTOCOL>.
-Within the body of the tag, add the tags <NAME></NAME> and <DESCRIPTION></DESCRIPTION> to specify the name and description of the protocol.
+Within the body of the tag, add the tags <NAME></NAME> and <DESCRIPTION></DESCRIPTION> to specify the name and description of the protocol. Don't forget to add the actual protocol after the tags, as well!
 '''
 
 class SenderNegotiator:
@@ -32,15 +33,14 @@ class SenderNegotiator:
         self.toolformer = toolformer
         self.max_rounds = max_rounds
 
-    def negotiate_protocol_for_task(self, task_schema, target_node):
+    def negotiate_protocol_for_task(self, task_schema, callback):
         found_protocol = None
 
         prompt = TASK_NEGOTIATOR_PROMPT + '\nThe JSON schema of the task is the following:\n\n' + json.dumps(task_schema, indent=2)
 
-        conversation = self.toolformer.new_conversation(prompt, category='negotiation')
+        conversation = self.toolformer.new_conversation(prompt, [], category='negotiation')
 
         other_message = 'Hello! How may I help you?'
-        conversation_id = None
 
         for i in range(self.max_rounds):
             print('===NegotiatorGPT===')
@@ -52,7 +52,13 @@ class SenderNegotiator:
 
             if protocol is None:
                 print('Could not extract')
-                other_message, conversation_id = chat(message, conversation_id, target_node)
+                response = callback(message)
+
+                if response['status'] == 'success':
+                    other_message = response['body']
+                else:
+                    other_message = 'Error interacting with the other party: ' + response['message']
+
                 print()
                 print('===Other GPT===')
                 print(other_message)
@@ -66,11 +72,10 @@ class SenderNegotiator:
                 if description is None:
                     description = 'No description provided'
                 
-                found_protocol = {
+                found_protocol = Protocol(protocol, [], {
                     'name': name,
-                    'description': description,
-                    'protocol': protocol
-                }
+                    'description': description
+                })
                 break
 
         return found_protocol
