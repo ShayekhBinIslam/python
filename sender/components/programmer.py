@@ -40,14 +40,15 @@ def send_query(task_data):
 
 # TODO: Prompts should be key-valued and overridable
 class SenderProgrammer:
-    def __init__(self, toolformer : Toolformer):
+    def __init__(self, toolformer : Toolformer, num_attempts : int = 5):
         self.toolformer = toolformer
+        self.num_attempts = num_attempts
 
-    def write_routine_for_task(self, task_schema, protocol_document):
+    def __call__(self, task_schema, protocol_document : str):
         conversation = self.toolformer.new_conversation(TASK_PROGRAMMER_PROMPT, [], category='programming')
         message = 'JSON schema:\n\n' + json.dumps(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document
 
-        for i in range(5):
+        for _ in range(self.num_attempts):
             reply = conversation.chat(message, print_output=True)
 
             implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>')

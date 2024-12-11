@@ -7,6 +7,7 @@ from common.storage import Storage, JSONStorage
 from receiver.components.responder import Responder
 from receiver.components.protocol_checker import ReceiverProtocolChecker
 from receiver.components.negotiator import ReceiverNegotiator
+from receiver.components.programmer import ReceiverProgrammer
 
 from utils import download_and_verify_protocol, extract_metadata
 
@@ -31,7 +32,8 @@ class ReceiverMemory:
             'sources': protocol_sources,
             'protocol': protocol_document, # TODO: Rename to 'document'?
             'metadata': metadata,
-            'suitability' : Suitability.UNKNOWN
+            'suitability' : Suitability.UNKNOWN,
+            'implementation' : None
         }
         self.storage.save_memory()
 
@@ -51,18 +53,32 @@ class ReceiverMemory:
     
     def is_adequate(self, protocol_id):
         return self.storage['protocols'][protocol_id]['suitability'] == Suitability.ADEQUATE
+    
+    def get_implementation(self, protocol_id):
+        # TODO: Should the implementation be included in Protocol?
+        if protocol_id not in self.storage['protocols']:
+            return None
+        return self.storage['protocols'][protocol_id]['implementation']
+    
+    def register_implementation(self, protocol_id, implementation):
+        if protocol_id not in self.storage['protocols']:
+            raise Exception('Protocol not in memory:', protocol_id)
+
+        self.storage['protocols'][protocol_id]['implementation'] = implementation
+        self.storage.save_memory()
 
 class Receiver:
-    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, tools: List[Tool], additional_info : str = ''):
+    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, tools: List[Tool], additional_info : str = ''):
         self.memory = ReceiverMemory(storage)
         self.responder = responder
         self.protocol_checker = protocol_checker
         self.negotiator = negotiator
+        self.programmer = programmer
         self.tools = tools
         self.additional_info = additional_info
 
     @staticmethod
-    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, tools : List[Tool] = None, additional_info : str = ''):
+    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, tools : List[Tool] = None, additional_info : str = ''):
         if tools is None:
             tools = []
 
@@ -78,8 +94,22 @@ class Receiver:
 
         if negotiator is None:
             negotiator = ReceiverNegotiator(toolformer)
+        
+        if programmer is None:
+            programmer = ReceiverProgrammer(toolformer)
 
-        return Receiver(storage, responder, protocol_checker, negotiator, tools, additional_info)
+        return Receiver(storage, responder, protocol_checker, negotiator, programmer, tools, additional_info)
+    
+    def get_implementation(self, protocol_id):
+        # Check if a routine exists and eventually create it
+        implementation = self.memory.get_implementation(protocol_id)
+
+        if implementation is None: # TODO: Decide when to implement # and self.memory.get_task_conversations(protocol_id, None) > -1:
+            protocol = self.memory.get_protocol(protocol_id)
+            implementation = self.programmer(self.tools, protocol.protocol_document)
+            self.memory.register_implementation(protocol_id, implementation)
+
+        return implementation
 
     def create_conversation(self, protocol_hash, protocol_sources):
         if protocol_hash == 'negotiation':
@@ -110,4 +140,10 @@ class Receiver:
             else:
                 raise Exception('Unsuitable protocol')
 
-        return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
+            implementation = self.get_implementation(protocol_hash)
+
+        if implementation is None:
+            return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
+        else:
+            # TODO: Implement the execution of the routine
+            return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)

@@ -126,8 +126,21 @@ class SenderMemory:
             'protocol': protocol_document,
             'sources': sources,
             'metadata': metadata,
-            'suitability': {}
+            'suitability': {},
+            'implementation': None # TODO: Should the protocol and the implementation be in a different storage?
         }
+        self.storage.save_memory()
+
+    def get_implementation(self, protocol_id):
+        # TODO: Should the implementation be included in Protocol?
+        if protocol_id not in self.storage['protocols']:
+            return None
+        return self.storage['protocols'][protocol_id]['implementation']
+    
+    def register_implementation(self, protocol_id, implementation):
+        if protocol_id not in self.storage['protocols']:
+            raise Exception('Protocol not in memory:', protocol_id)
+        self.storage['protocols'][protocol_id]['implementation'] = implementation
         self.storage.save_memory()
 
 
@@ -191,7 +204,21 @@ class Sender:
             for protocol_id, evaluation in protocol_evaluations.items():
                 self.memory.set_default_suitability(protocol_id, task_id, evaluation)
 
+        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > -1: # TODO: Should be configurable
+            suitable_protocol = self.negotiate_protocol(task_schema, target)
+
         return suitable_protocol
+    
+    def get_implementation(self, protocol_id, task_schema):
+        # Check if a routine exists and eventually create it
+        implementation = self.memory.get_implementation(protocol_id)
+
+        if implementation is None and self.memory.get_task_conversations(protocol_id, None) > -1:
+            protocol = self.memory.get_protocol(protocol_id)
+            implementation = self.programmer(task_schema, protocol.protocol_document)
+            self.memory.register_implementation(protocol_id, implementation)
+
+        return implementation
 
     def execute_task(self, task_id, task_schema, task_data, target):
         # TODO: The sender components (querier, programmer, negotiator) should be aware of any tools that are available + additional info.
@@ -212,6 +239,11 @@ class Sender:
             response = external_conversation(query)
             print('Response to sender:', response)
             return response
+
+        implementation = None
+
+        if protocol is not None:
+            implementation = self.get_implementation(protocol.hash, task_schema)
 
         response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
         external_conversation.close()
