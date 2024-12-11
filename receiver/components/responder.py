@@ -25,30 +25,28 @@ NL_RESPONDER_PROMPT = 'You are NaturalLanguageResponderGPT. You will receive a q
     #'If you do not have enough information to reply, if you cannot execute the request, or if the request is invalid, reply with "ERROR" (without quotes).' \
 
 class Responder:
-    def __init__(self, toolformer : Toolformer, tools, additional_info : str):
+    def __init__(self, toolformer : Toolformer):
         self.toolformer = toolformer
-        self.tools = tools
-        self.additional_info = additional_info
 
-    def create_protocol_conversation(self, protocol_document):
+    def create_protocol_conversation(self, protocol_document, tools, additional_info : str):
         print('===NL RESPONDER (WITH PROTOCOL)===')
 
-        prompt = PROTOCOL_RESPONDER_PROMPT + self.additional_info + '\n\nThe protocol is the following:\n\n' + protocol_document
+        prompt = PROTOCOL_RESPONDER_PROMPT + additional_info + '\n\nThe protocol is the following:\n\n' + protocol_document
 
-        return self.toolformer.new_conversation(prompt, self.tools, category='conversation')
+        return self.toolformer.new_conversation(prompt, tools, category='conversation')
 
 
-    def create_nl_conversation(self):
+    def create_nl_conversation(self, tools, additional_info : str):
         print('===NL RESPONDER (NO PROTOCOL)===')
-        print(NL_RESPONDER_PROMPT + self.additional_info)
+        print(NL_RESPONDER_PROMPT + additional_info)
 
-        print('Preparing NL response with tools:', [tool.name for tool in self.tools])
+        print('Preparing NL response with tools:', [tool.name for tool in tools])
 
-        conversation = self.toolformer.new_conversation(NL_RESPONDER_PROMPT + self.additional_info, self.tools, category='conversation')
+        conversation = self.toolformer.new_conversation(NL_RESPONDER_PROMPT + additional_info, tools, category='conversation')
         return conversation
 
-    def create_conversation(self, protocol_document):
+    def create_conversation(self, protocol_document, tools, additional_info : str):
         if protocol_document is None:
-            return self.create_nl_conversation()
+            return self.create_nl_conversation(tools, additional_info)
         else:
-            return self.create_protocol_conversation(protocol_document)
+            return self.create_protocol_conversation(protocol_document, tools, additional_info)
