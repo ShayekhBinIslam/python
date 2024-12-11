@@ -8,11 +8,12 @@ from toolformers.base import Tool
 
 class Executor:
     @abstractmethod
-    def run_routine(self, routine_path, protocol_id, task_data, tools):
+    def run_routine(self, routine_text, protocol_id, task_data, tools):
         pass
 
 class UnsafeExecutor(Executor):
-    def run_routine(self, routine_path, protocol_id, task_data, tools : List[Tool]):
+    def run_routine(self, routine_text, protocol_id, task_data, tools : List[Tool]):
+        # TODO: Use routine_text
         # TODO: This should be done in a safe, containerized environment
         spec = importlib.util.spec_from_file_location(protocol_id, str(routine_path))
         loaded_module = importlib.util.module_from_spec(spec)

@@ -5,24 +5,36 @@ from pathlib import Path
 from common.core import Suitability
 from common.storage import Storage
 
-class SenderStorage(Storage):
+class ReceiverStorage(Storage):
     @abstractmethod
     def has_implementation(self, protocol_id):
+        pass
+
+    @abstractmethod
+    def has_protocol_document(self, protocol_id):
+        pass
+
+    @abstractmethod
+    def load_protocol_document(self, protocol_id):
         pass
     
     @abstractmethod
     def get_suitability(self, protocol_id):
         pass
 
+    @abstractmethod
+    def set_suitability(self, protocol_id, suitability):
+        pass
+
     def is_categorized(self, protocol_id):
         return self.get_suitability(protocol_id) != Suitability.UNKNOWN
     
     @abstractmethod
-    def increment_conversations(self, task_id, target):
+    def increment_conversations(self, target):
         pass
     
     @abstractmethod
-    def get_num_conversations(self, task_id, target):
+    def get_num_conversations(self, target):
         pass
     
     @abstractmethod
@@ -30,10 +42,14 @@ class SenderStorage(Storage):
         pass
     
     @abstractmethod
-    def register_implementation(self, protocol_id, task_id, implementation):
+    def register_implementation(self, protocol_id, implementation):
         pass
 
-class LocalSenderStorage(SenderStorage):
+    @abstractmethod
+    def get_implementation_path(self, protocol_id):
+        pass
+
+class LocalReceiverStorage(ReceiverStorage):
     def __init__(self, storage_path=None):
         self.protocols = {}
         self.conversations = {}
@@ -58,50 +74,41 @@ class LocalSenderStorage(SenderStorage):
             self.protocols = data['protocols']
             self.conversations = data['conversations']
     
-    def has_implementation(self, task_id, protocol_id):
+    def has_implementation(self, protocol_id):
         if protocol_id not in self.protocols:
             return False
-
-        if task_id not in self.protocols[protocol_id]['has_implementation']:
-            return False
         
-        return self.protocols[protocol_id]['has_implementation'][task_id]
+        return self.protocols[protocol_id]['has_implementation']
 
-    def get_suitability(self, task_type, protocol_id):
+    def get_suitability(self, protocol_id):
         if protocol_id not in self.protocols:
             return Suitability.UNKNOWN
-        
-        if task_type not in self.protocols[protocol_id]['suitability_info']:
-            return Suitability.UNKNOWN
 
-        return self.protocols[protocol_id]['suitability_info'][task_type]
-
-    def is_categorized(self, task_type, protocol_id):
-        if protocol_id not in self.protocols:
-            return False
-        
-        if task_type not in self.protocols[protocol_id]['suitability_info']:
-            return False
-        
-        return self.protocols[protocol_id]['suitability_info'][task_type] != Suitability.UNKNOWN
+        return self.protocols[protocol_id]['suitability_info']
     
-    def increment_conversations(self, task_id, target):
-        if task_id not in self.conversations:
-            self.conversations[task_id] = {}
-        if target not in self.conversations[task_id]:
-            self.conversations[task_id][target] = 0
-        
-        self.conversations[task_id][target] += 1
+    def set_suitability(self, protocol_id, suitability):
+        self.protocols[protocol_id]['suitability_info'] = suitability
 
-        # task_data isn't used
+    def is_categorized(self, protocol_id):
+        if protocol_id not in self.protocols:
+            return False
+        
+        return self.protocols[protocol_id]['suitability_info'] != Suitability.UNKNOWN
+    
+    def increment_conversations(self, target):
+        if target not in self.conversations:
+            self.conversations[target] = 0
+        
+        self.conversations[target] += 1
 
-    def get_num_conversations(self, task_id, target):
-        if task_id not in self.conversations:
-            return 0
-        if target not in self.conversations[task_id]:
+    def get_num_conversations(self, target):
+        if target not in self.conversations:
             return 0
         
-        return self.conversations[task_id][target]
+        return self.conversations[target]
+    
+    def has_protocol_document(self, protocol_id):
+        return protocol_id in self.protocols
     
     def register_new_protocol(self, protocol_id, source, protocol):
         self.protocols[protocol_id] = {
@@ -113,19 +120,19 @@ class LocalSenderStorage(SenderStorage):
         with open(self.storage_path / 'protocol_documents' / f'{protocol_id}.json', 'w') as f:
             f.write(protocol)
     
-    def register_implementation(self, protocol_id, task_id, implementation):
+    def register_implementation(self, protocol_id, implementation):
         if protocol_id not in self.protocols:
             return False
         
-        self.protocols[protocol_id]['has_implementation'][task_id] = True
+        self.protocols[protocol_id]['has_implementation'] = True
 
-        with open(self.storage_path / 'implementations' / f'{protocol_id}_{task_id}.py', 'w') as f:
+        with open(self.storage_path / 'implementations' / f'{protocol_id}.py', 'w') as f:
             f.write(implementation)
 
         return True
     
-    def get_implementation_path(self, protocol_id, task_id):
-        return self.storage_path / 'implementations' / f'{protocol_id}_{task_id}.py'
+    def get_implementation_path(self, protocol_id):
+        return self.storage_path / 'implementations' / f'{protocol_id}.py'
 
     def load_protocol_document(self, protocol_id):
         base_folder = self.storage_path / 'protocol_documents'

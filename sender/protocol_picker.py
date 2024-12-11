@@ -1,6 +1,6 @@
 class ProtocolPicker:
-    def __init__(self, memory):
-        self.memory = memory
+    def __init__(self):
+        pass
 
     def get_an_adequate_protocol(self, task_id, eligible_protocols):
         # Will ignore protocols that haven't been downloaded yet

@@ -283,6 +283,6 @@ class Conversation(ABC):
 
 class Toolformer(ABC):
     @abstractmethod
-    def new_conversation(self, category=None) -> Conversation:
+    def new_conversation(self, prompt, tools, category=None) -> Conversation:
         pass
 
