@@ -4,6 +4,7 @@ from common.core import Suitability, Protocol
 
 from toolformers.base import Tool
 from common.storage import Storage, JSONStorage
+from common.executor import Executor, UnsafeExecutor
 from receiver.components.responder import Responder
 from receiver.components.protocol_checker import ReceiverProtocolChecker
 from receiver.components.negotiator import ReceiverNegotiator
@@ -68,17 +69,18 @@ class ReceiverMemory:
         self.storage.save_memory()
 
 class Receiver:
-    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, tools: List[Tool], additional_info : str = ''):
+    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, executor: Executor, tools: List[Tool], additional_info : str = ''):
         self.memory = ReceiverMemory(storage)
         self.responder = responder
         self.protocol_checker = protocol_checker
         self.negotiator = negotiator
         self.programmer = programmer
+        self.executor = executor
         self.tools = tools
         self.additional_info = additional_info
 
     @staticmethod
-    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, tools : List[Tool] = None, additional_info : str = ''):
+    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, executor : Executor = None, tools : List[Tool] = None, additional_info : str = ''):
         if tools is None:
             tools = []
 
@@ -98,7 +100,10 @@ class Receiver:
         if programmer is None:
             programmer = ReceiverProgrammer(toolformer)
 
-        return Receiver(storage, responder, protocol_checker, negotiator, programmer, tools, additional_info)
+        if executor is None:
+            executor = UnsafeExecutor() # TODO: UnsafeExecutor cannot be the default
+
+        return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info)
     
     def get_implementation(self, protocol_id):
         # Check if a routine exists and eventually create it
@@ -145,5 +150,4 @@ class Receiver:
         if implementation is None:
             return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
         else:
-            # TODO: Implement the execution of the routine
-            return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
+            return self.executor.new_conversation(protocol_hash, implementation, self.tools)

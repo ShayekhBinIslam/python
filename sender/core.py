@@ -11,6 +11,8 @@ from sender.components.transporter import SenderTransporter, SimpleSenderTranspo
 from common.executor import Executor, UnsafeExecutor
 
 from common.core import Suitability
+from toolformers.base import Tool, StringParameter
+
 
 
 class SenderMemory:
@@ -219,6 +221,13 @@ class Sender:
             self.memory.register_implementation(protocol_id, implementation)
 
         return implementation
+    
+    def run_routine(self, protocol_id, implementation, task_data, callback):
+        send_query_tool = Tool('send_to_server', 'Send a query to the other service based on a protocol document.', [
+            StringParameter('query', 'The query to send to the service', True)
+        ], lambda x: callback(x)['body']) # TODO: Handle errors
+
+        return self.executor(protocol_id, implementation, task_data, [send_query_tool])
 
     def execute_task(self, task_id, task_schema, task_data, target):
         # TODO: The sender components (querier, programmer, negotiator) should be aware of any tools that are available + additional info.
@@ -245,7 +254,11 @@ class Sender:
         if protocol is not None:
             implementation = self.get_implementation(protocol.hash, task_schema)
 
-        response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
+        if implementation is None:
+            response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
+        else:
+            response = self.run_routine(protocol.hash, implementation, task_data, send_query)
+            
         external_conversation.close()
 
         return response
