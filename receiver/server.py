@@ -13,31 +13,39 @@ class ReceiverServer:
 
         @self.app.route('/', methods=['POST'])
         def main():
-            data = request.json
+            try:
+                data = request.json
 
-            conversation = self.receiver.create_conversation(data['protocolHash'], data['protocolSources'])
+                conversation = self.receiver.create_conversation(data['protocolHash'], data['protocolSources'])
 
-            if data.get('multiround', False):
-                # Multiround mode; generate a unique ID for the conversation
-                conversation_id = str(uuid.uuid4())
+                if data.get('multiround', False):
+                    # Multiround mode; generate a unique ID for the conversation
+                    conversation_id = str(uuid.uuid4())
 
-                self.conversation_storage[conversation_id] = conversation
+                    self.conversation_storage[conversation_id] = conversation
 
-                response = {
-                    'status': 'success',
-                    'conversationId': conversation_id,
-                    'body': conversation.chat(data['body'])
-                }
+                    response = {
+                        'status': 'success',
+                        'conversationId': conversation_id,
+                        'body': conversation.chat(data['body'])
+                    }
 
-                # Automatically delete the conversation after 30 seconds
-                Timer(30, lambda: self.conversation_storage.pop(conversation_id, None)).start()
-            else:
-                response = {
-                    'status': 'success',
-                    'body': conversation.chat(data['body'])
-                }
+                    # Automatically delete the conversation after 300 seconds
+                    Timer(300, lambda: self.conversation_storage.pop(conversation_id, None)).start()
+                else:
+                    response = {
+                        'status': 'success',
+                        'body': conversation.chat(data['body'])
+                    }
 
-            return jsonify(response)
+                return jsonify(response)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return jsonify({
+                    'status': 'error',
+                    'message': str(e)
+                })
         
         @self.app.route('/conversations/<conversation_id>', methods=['POST', 'DELETE'])
         def continue_conversation(conversation_id):
