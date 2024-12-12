@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-
 import json
 
 from google.generativeai.types import CallableFunctionDeclaration
 import google.generativeai.types.content_types as content_types
+
+from common.core import Conversation
 
 class Parameter:
     def __init__(self, name, description, required):
@@ -276,10 +277,6 @@ class Tool:
         return f
 
 
-class Conversation(ABC):
-    @abstractmethod
-    def chat(self, message, role='user', print_output=True):
-        pass
 
 class Toolformer(ABC):
     @abstractmethod

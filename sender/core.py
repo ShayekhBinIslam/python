@@ -177,16 +177,13 @@ class Sender:
         return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter)
 
     def negotiate_protocol(self, task_schema, target) -> Optional[Protocol]:
-        external_conversation = self.transporter.new_conversation(target, True, 'negotiation', None)
+        with self.transporter.new_conversation(target, True, 'negotiation', None) as external_conversation:
+            def send_query(query):
+                response = external_conversation(query)
+                print('Response to negotiator:', response)
+                return response
 
-        def send_query(query):
-            response = external_conversation(query)
-            print('Response to negotiator:', response)
-            return response
-
-        protocol = self.negotiator.negotiate_protocol_for_task(task_schema, send_query)
-
-        external_conversation.close()
+            protocol = self.negotiator.negotiate_protocol_for_task(task_schema, send_query)
 
         # TODO: Store the protocol document somewhere else
         if protocol is not None:
@@ -237,28 +234,26 @@ class Sender:
         protocol = self.get_suitable_protocol(task_id, task_schema, target)
 
         # TODO: multiround depends on the protocol
-        external_conversation = self.transporter.new_conversation(
+        with self.transporter.new_conversation(
             target,
             True,
             protocol.hash if protocol else None,
             protocol.sources if protocol else None
         )
+        ) as external_conversation:
+            def send_query(query):
+                response = external_conversation(query)
+                print('Response to sender:', response)
+                return response
 
-        def send_query(query):
-            response = external_conversation(query)
-            print('Response to sender:', response)
+            implementation = None
+
+            if protocol is not None:
+                implementation = self.get_implementation(protocol.hash, task_schema)
+
+            if implementation is None:
+                response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
+            else:
+                response = self.run_routine(protocol.hash, implementation, task_data, send_query)
+
             return response
-
-        implementation = None
-
-        if protocol is not None:
-            implementation = self.get_implementation(protocol.hash, task_schema)
-
-        if implementation is None:
-            response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
-        else:
-            response = self.run_routine(protocol.hash, implementation, task_data, send_query)
-            
-        external_conversation.close()
-
-        return response

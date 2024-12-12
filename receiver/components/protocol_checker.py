@@ -23,7 +23,7 @@ class ReceiverProtocolChecker:
 
         conversation = self.toolformer.new_conversation(CHECKER_TOOL_PROMPT, [], category='protocolChecking')
 
-        reply = conversation.chat(message, print_output=True)
+        reply = conversation(message, print_output=True)
 
         print('Reply:', reply)
         print(reply.lower().strip()[-10:])

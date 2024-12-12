@@ -12,7 +12,7 @@ class Executor:
     def new_conversation(self, protocol_id : str, code : str, tools : List[Tool]) -> Conversation:
         return ExecutorConversation(self, protocol_id, code, tools)
 
-class UnsafeExecutor:
+class UnsafeExecutor(Executor):
     def __call__(self, protocol_id, code, task_data, tools : List[Tool]):
         print(code)
         protocol_id = protocol_id.replace('-', '_').replace('.', '_').replace('/', '_')
@@ -34,7 +34,7 @@ class ExecutorConversation(Conversation):
         self.code = code
         self.tools = tools
     
-    def chat(self, message, role='user', print_output=True):
+    def __call__(self, message, print_output=True):
         # TODO: Support multiround conversations
         response = self.executor(self.protocol_id, self.code, message, self.tools)
 

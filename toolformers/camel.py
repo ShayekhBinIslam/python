@@ -13,22 +13,17 @@ from camel.toolkits.function_tool import FunctionTool
 from camel.configs.openai_config import ChatGPTConfig
 
 class CamelConversation(Conversation):
-    def __init__(self, toolformer, agent, category=None):
+    def __init__(self, toolformer, agent : ChatAgent, category=None):
         self.toolformer = toolformer
         self.agent = agent
         self.category = category
     
-    def chat(self, message, role='user', print_output=True):
+    def __call__(self, message, print_output=True):
         agent_id = os.environ.get('AGENT_ID', None)
 
         start_time = datetime.datetime.now()
 
-        if role == 'user':
-            formatted_message = BaseMessage.make_user_message('user', message)
-        elif role == 'assistant':
-            formatted_message = BaseMessage.make_assistant_message('assistant', message)
-        else:
-            raise ValueError('Role must be either "user" or "assistant".')
+        formatted_message = BaseMessage.make_user_message('user', message)
         
         response = self.agent.step(formatted_message)
 

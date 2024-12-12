@@ -126,7 +126,7 @@ class Querier:
         conversation = self.toolformer.new_conversation(prompt, [send_query_tool, register_output_tool], category='conversation')
 
         for i in range(5):
-            conversation.chat(message, print_output=True)
+            conversation(message, print_output=True)
 
             if found_output is not None:
                 break

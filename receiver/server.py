@@ -27,7 +27,7 @@ class ReceiverServer:
                     response = {
                         'status': 'success',
                         'conversationId': conversation_id,
-                        'body': conversation.chat(data['body'])
+                        'body': conversation(data['body'])
                     }
 
                     # Automatically delete the conversation after 300 seconds
@@ -35,7 +35,7 @@ class ReceiverServer:
                 else:
                     response = {
                         'status': 'success',
-                        'body': conversation.chat(data['body'])
+                        'body': conversation(data['body'])
                     }
 
                 return jsonify(response)
@@ -67,7 +67,7 @@ class ReceiverServer:
 
             response = {
                 'status': 'success',
-                'body': conversation.chat(data['body'])
+                'body': conversation(data['body'])
             }
 
             return jsonify(response)

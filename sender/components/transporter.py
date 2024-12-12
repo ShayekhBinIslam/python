@@ -1,19 +1,16 @@
 from abc import ABC, abstractmethod
 import requests
 
-
-class ExternalConversation(ABC):
-    def __call__(self, query):
-        pass
+from common.core import Conversation
 
 class SenderTransporter(ABC):
     @abstractmethod
-    def new_conversation(self, target, multiround, protocol_hash, protocol_sources) -> ExternalConversation:
+    def new_conversation(self, target, multiround, protocol_hash, protocol_sources) -> Conversation:
         pass
 
 
 class SimpleSenderTransporter(SenderTransporter):
-    class SimpleExternalConversation(ExternalConversation):
+    class SimpleExternalConversation(Conversation):
         def __init__(self, target, multiround, protocol_hash, protocol_sources):
             self.target = target
             self.multiround = multiround
@@ -58,6 +55,6 @@ class SimpleSenderTransporter(SenderTransporter):
                 if raw_response.status_code != 200:
                     raise Exception('Error in closing external conversation:', raw_response.text)
 
-    def new_conversation(self, target, multiround, protocol_hash, protocol_sources) -> ExternalConversation:
+    def new_conversation(self, target, multiround, protocol_hash, protocol_sources) -> SimpleExternalConversation:
         return self.SimpleExternalConversation(target, multiround, protocol_hash, protocol_sources)
 

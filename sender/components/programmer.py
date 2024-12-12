@@ -49,7 +49,7 @@ class SenderProgrammer:
         message = 'JSON schema:\n\n' + json.dumps(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document
 
         for _ in range(self.num_attempts):
-            reply = conversation.chat(message, print_output=True)
+            reply = conversation(message, print_output=True)
 
             implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>')
 
