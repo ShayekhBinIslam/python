@@ -41,7 +41,12 @@ class ReceiverProgrammer:
             for tool in tools:
                 message += tool.as_documented_python() + '\n\n'
 
-        conversation = self.toolformer.new_conversation(TOOL_PROGRAMMER_PROMPT + additional_info, [], category='programming')
+        prompt = TOOL_PROGRAMMER_PROMPT
+
+        if additional_info:
+            prompt += '\n\n' + additional_info
+
+        conversation = self.toolformer.new_conversation(prompt, [], category='programming')
 
         for _ in range(self.num_attempts):
             reply = conversation(message, print_output=True)

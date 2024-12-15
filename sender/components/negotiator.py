@@ -43,10 +43,13 @@ class SenderNegotiator:
         self.toolformer = toolformer
         self.max_rounds = max_rounds
 
-    def negotiate_protocol_for_task(self, task_schema, callback):
+    def negotiate_protocol_for_task(self, task_schema, callback, additional_info : str = ''):
         found_protocol = None
 
         prompt = TASK_NEGOTIATOR_PROMPT + '\nThe JSON schema of the task is the following:\n\n' + json.dumps(task_schema, indent=2)
+
+        if additional_info:
+            prompt += '\n\n' + additional_info
 
         conversation = self.toolformer.new_conversation(prompt, [], category='negotiation')
 

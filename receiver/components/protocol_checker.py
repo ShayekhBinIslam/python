@@ -11,8 +11,7 @@ class ReceiverProtocolChecker:
     def __init__(self, toolformer : Toolformer):
         self.toolformer = toolformer
     
-    def __call__(self, protocol_document : str, tools : List[Tool]):
-        # TODO: Support for additional_info
+    def __call__(self, protocol_document : str, tools : List[Tool], additional_info : str = ''):
         message = 'Protocol document:\n\n' + protocol_document + '\n\n' + 'Functions that the implementer will have access to:\n\n'
 
         if len(tools) == 0:
@@ -21,7 +20,12 @@ class ReceiverProtocolChecker:
             for tool in tools:
                 message += tool.as_documented_python() + '\n\n'
 
-        conversation = self.toolformer.new_conversation(CHECKER_TOOL_PROMPT, [], category='protocolChecking')
+        prompt = CHECKER_TOOL_PROMPT
+
+        if additional_info:
+            prompt += '\n\n' + additional_info
+
+        conversation = self.toolformer.new_conversation(prompt, [], category='protocolChecking')
 
         reply = conversation(message, print_output=True)
 

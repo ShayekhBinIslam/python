@@ -30,10 +30,11 @@ class ReceiverNegotiator:
     def __init__(self, toolformer : Toolformer):
         self.toolformer = toolformer
 
-    def create_conversation(self, tools, additional_info : str):
+    def create_conversation(self, tools, additional_info : str = ''):
         prompt = TOOLS_NEGOTIATOR_PROMPT
 
-        prompt += '\n\n' + additional_info
+        if additional_info:
+            prompt += '\n\n' + additional_info
 
         prompt += '\n\nThe tools that the implementer will have access to are:\n\n'
 
