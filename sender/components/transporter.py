@@ -40,7 +40,7 @@ class SimpleSenderTransporter(SenderTransporter):
             
             response = raw_response.json()
 
-            if self.multiround:
+            if self.multiround and self._conversation_id is None:
                 if 'conversationId' not in response:
                     raise Exception('Multiround conversation did not return conversationId:', response)
                 self._conversation_id = response['conversationId']

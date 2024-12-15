@@ -121,6 +121,7 @@ class Receiver:
             return self.negotiator.create_conversation(self.tools, self.additional_info)
 
         protocol_document = None
+        implementation = None
 
         if protocol_hash is not None:
             if self.memory.is_unknown(protocol_hash):

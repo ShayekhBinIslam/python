@@ -128,7 +128,10 @@ class SenderMemory:
             'protocol': protocol_document,
             'sources': sources,
             'metadata': metadata,
-            'suitability': {},
+            'suitability': {
+                'default': Suitability.UNKNOWN,
+                'overrides': {}
+            },
             'implementation': None # TODO: Should the protocol and the implementation be in a different storage?
         }
         self.storage.save_memory()
