@@ -2,7 +2,7 @@ import json
 
 from common.core import Protocol
 from toolformers.base import Toolformer
-from utils import extract_substring
+from utils import extract_metadata, extract_substring
 
 NEGOTIATION_RULES = '''
 Here are some rules (that should also be explained to the other GPT):
@@ -25,7 +25,17 @@ You will receive a JSON schema of the task that the service must perform. Negoti
 To do so, you will chat with another GPT (role: user) that will negotiate on behalf of the service.
 {NEGOTIATION_RULES}
 Once you are ready to save the protocol, reply wrapping the final version of the protocol, as agreed in your negotiation, between the tags <FINALPROTOCOL> and </FINALPROTOCOL>.
-Within the body of the tag, add the tags <NAME></NAME> and <DESCRIPTION></DESCRIPTION> to specify the name and description of the protocol. Don't forget to add the actual protocol after the tags, as well!
+Within the body of the tag, before everything else, add a section (between ---) that contains the name, the description of the protocol, and whether the protocol requires multiple rounds of communication. For instance:
+<FINALPROTOCOL>
+---
+name: MyProtocol
+description: This protocol is for...
+multiround: false
+---
+
+Body of the protocol...
+
+</FINALPROTOCOL>
 '''
 
 class SenderNegotiator:
@@ -64,18 +74,9 @@ class SenderNegotiator:
                 print(other_message)
                 print()
             else:
-                name = extract_substring(protocol, '<NAME>', '</NAME>')
-                description = extract_substring(protocol, '<DESCRIPTION>', '</DESCRIPTION>')
-
-                if name is None:
-                    name = 'Unnamed protocol'
-                if description is None:
-                    description = 'No description provided'
+                metadata = extract_metadata(protocol)
                 
-                found_protocol = Protocol(protocol, [], {
-                    'name': name,
-                    'description': description
-                })
+                found_protocol = Protocol(protocol, [], metadata)
                 break
 
         return found_protocol

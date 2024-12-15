@@ -236,7 +236,7 @@ class Sender:
         # TODO: multiround depends on the protocol
         with self.transporter.new_conversation(
             target,
-            True,
+            protocol.metadata['multiround'] if protocol else True,
             protocol.hash if protocol else None,
             protocol.sources if protocol else None
         )
