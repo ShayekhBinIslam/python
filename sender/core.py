@@ -150,7 +150,19 @@ class SenderMemory:
 
 
 class Sender:
-    def __init__(self, storage : Storage, protocol_picker : ProtocolPicker, negotiator : SenderNegotiator, programmer : SenderProgrammer, executor : Executor, querier : Querier, transporter : SenderTransporter):
+    def __init__(
+            self,
+            storage : Storage,
+            protocol_picker : ProtocolPicker,
+            negotiator : SenderNegotiator,
+            programmer : SenderProgrammer,
+            executor : Executor,
+            querier : Querier,
+            transporter : SenderTransporter,
+            protocol_threshold : int = 5,
+            negotiation_threshold : int = 10,
+            implementation_threshold : int = 5
+        ):
         self.memory = SenderMemory(storage)
         self.protocol_picker = protocol_picker
         self.negotiator = negotiator
@@ -158,9 +170,24 @@ class Sender:
         self.executor = executor
         self.querier = querier
         self.transporter = transporter
+        self.protocol_threshold = protocol_threshold
+        self.negotiation_threshold = negotiation_threshold
+        self.implementation_threshold = implementation_threshold
 
     @staticmethod
-    def make_default(toolformer, storage : Storage = None, protocol_picker : ProtocolPicker = None, negotiator : SenderNegotiator = None, programmer : SenderProgrammer = None, executor : Executor = None, querier : Querier = None, transporter : SenderTransporter = None):
+    def make_default(
+        toolformer,
+        storage : Storage = None,
+        protocol_picker : ProtocolPicker = None,
+        negotiator : SenderNegotiator = None,
+        programmer : SenderProgrammer = None,
+        executor : Executor = None,
+        querier : Querier = None,
+        transporter : SenderTransporter = None,
+        protocol_threshold : int = 5,
+        negotiation_threshold : int = 10,
+        implementation_threshold : int = 5
+    ):
         if storage is None:
             path = './sender_storage.json'
             storage = JSONStorage(path) # TODO
@@ -177,7 +204,7 @@ class Sender:
         if transporter is None:
             transporter = SimpleSenderTransporter()
         
-        return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter)
+        return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
     def negotiate_protocol(self, task_schema, target) -> Optional[Protocol]:
         with self.transporter.new_conversation(target, True, 'negotiation', None) as external_conversation:
@@ -198,7 +225,7 @@ class Sender:
         # Look in the memory
         suitable_protocol = self.memory.get_suitable_protocol(task_id, target)
 
-        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > -1: # TODO: Should be configurable
+        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > self.protocol_threshold:
             protocol_ids = self.memory.get_unclassified_protocols(task_id)
             protocols = [self.memory.get_protocol(protocol_id) for protocol_id in protocol_ids]
             suitable_protocol, protocol_evaluations = self.protocol_picker.pick_protocol(task_schema, protocols)
@@ -206,7 +233,7 @@ class Sender:
             for protocol_id, evaluation in protocol_evaluations.items():
                 self.memory.set_default_suitability(protocol_id, task_id, evaluation)
 
-        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > -1: # TODO: Should be configurable
+        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > self.negotiation_threshold:
             suitable_protocol = self.negotiate_protocol(task_schema, target)
 
         return suitable_protocol
@@ -215,7 +242,7 @@ class Sender:
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
-        if implementation is None and self.memory.get_task_conversations(protocol_id, None) > -1:
+        if implementation is None and self.memory.get_task_conversations(protocol_id, None) > self.implementation_threshold:
             protocol = self.memory.get_protocol(protocol_id)
             implementation = self.programmer(task_schema, protocol.protocol_document)
             self.memory.register_implementation(protocol_id, implementation)
