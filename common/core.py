@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Dict, List
-from utils import compute_hash
+from typing import Dict, List, Optional
+from utils import compute_hash, extract_metadata
 
 class Suitability(str, Enum):
     ADEQUATE = 'adequate'
@@ -25,9 +25,15 @@ class Conversation(ABC):
         self.close()
 
 class Protocol:
-    def __init__(self, protocol_document : str, sources : List[str], metadata : Dict[str, str]):
+    def __init__(self, protocol_document : str, sources : List[str], metadata : Optional[Dict[str, str]]):
         self.protocol_document = protocol_document
         self.sources = sources
+
+        if metadata is None:
+            try:
+                metadata = extract_metadata(protocol_document)
+            except:
+                metadata = {}
         self.metadata = metadata
 
     @property
