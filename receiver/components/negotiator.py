@@ -8,7 +8,6 @@ Here are some rules (that should also be explained to the other GPT):
 - The implementation will be written by a programmer that does not have access to the negotiation process, so make sure the protocol is clear and unambiguous.
 - The implementation will receive a string and return a string, so structure your protocol accordingly.
 - The other party might have a different internal data schema or set of tools, so make sure that the protocol is flexible enough to accommodate that.
-- There will only be one message sent by the sender and one message sent by the receiver. Design the protocol accordingly.
 - Keep the negotiation short: no need to repeat the same things over and over.
 - If the other party has proposed a protocol and you're good with it, there's no reason to keep negotiating or to repeat the protocol to the other party.
 - Do not restate parts of the protocols that have already been agreed upon.

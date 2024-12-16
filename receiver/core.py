@@ -140,6 +140,8 @@ class Receiver:
                     self.memory.set_suitability(protocol_hash, Suitability.ADEQUATE)
                 else:
                     self.memory.set_suitability(protocol_hash, Suitability.INADEQUATE)
+            else:
+                metadata = self.memory.get_protocol(protocol_hash).metadata
 
             if self.memory.is_adequate(protocol_hash):
                 protocol_document = self.memory.get_protocol(protocol_hash).protocol_document
@@ -151,4 +153,4 @@ class Receiver:
         if implementation is None:
             return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
         else:
-            return self.executor.new_conversation(protocol_hash, implementation, self.tools)
+            return self.executor.new_conversation(protocol_hash, implementation, metadata.get('multiround', False), self.tools)

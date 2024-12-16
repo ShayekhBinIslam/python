@@ -254,7 +254,7 @@ class Sender:
             StringParameter('query', 'The query to send to the service', True)
         ], lambda x: callback(x)['body']) # TODO: Handle errors
 
-        return self.executor(protocol_id, implementation, task_data, [send_query_tool])
+        return self.executor(protocol_id, implementation, [send_query_tool], [task_data], {})
 
     def execute_task(self, task_id, task_schema, task_data, target):
         # TODO: The sender components (querier, programmer, negotiator) should be aware of any tools that are available + additional info.
