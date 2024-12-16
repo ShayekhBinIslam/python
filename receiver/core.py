@@ -4,7 +4,7 @@ from common.core import Suitability, Protocol
 
 from toolformers.base import Tool
 from common.storage import Storage, JSONStorage
-from common.executor import Executor, UnsafeExecutor
+from common.executor import Executor, RestrictedExecutor
 from receiver.components.responder import Responder
 from receiver.components.protocol_checker import ReceiverProtocolChecker
 from receiver.components.negotiator import ReceiverNegotiator
@@ -101,7 +101,7 @@ class Receiver:
             programmer = ReceiverProgrammer(toolformer)
 
         if executor is None:
-            executor = UnsafeExecutor() # TODO: UnsafeExecutor cannot be the default
+            executor = RestrictedExecutor()
 
         return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info)
     

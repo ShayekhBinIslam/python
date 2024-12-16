@@ -3,6 +3,7 @@ import importlib
 from typing import List
 
 from toolformers.base import Tool, Conversation
+from common.interpreters.restricted import execute_restricted
 
 class Executor:
     @abstractmethod
@@ -25,6 +26,14 @@ class UnsafeExecutor(Executor):
             loaded_module.__dict__[tool.name] = tool.as_executable_function()
 
         return loaded_module.run(*input_args, **input_kwargs)
+    
+class RestrictedExecutor(Executor):
+    def __call__(self, protocol_id : str, code : str, tools : List[Tool], input_args : list, input_kwargs : dict):
+        supported_globals = {
+            tool.name : tool.as_executable_function() for tool in tools
+        }
+        return execute_restricted(code, supported_imports=['json'], function_name='run', extra_globals=supported_globals, input_args=input_args, input_kwargs=input_kwargs)
+
 
 class ExecutorConversation(Conversation):
     def __init__(self, executor : Executor, protocol_id : str, code : str, multiround : bool, tools : List[Tool]):

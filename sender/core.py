@@ -3,12 +3,11 @@ from typing import Optional
 from common.core import Protocol
 from common.storage import Storage, JSONStorage
 from sender.components.negotiator import SenderNegotiator
-from sender.policy import SimpleSenderPolicy
 from sender.components.programmer import SenderProgrammer
 from sender.components.protocol_picker import ProtocolPicker
 from sender.components.querier import Querier
 from sender.components.transporter import SenderTransporter, SimpleSenderTransporter
-from common.executor import Executor, UnsafeExecutor
+from common.executor import Executor, RestrictedExecutor
 
 from common.core import Suitability
 from toolformers.base import Tool, StringParameter
@@ -198,7 +197,7 @@ class Sender:
         if programmer is None:
             programmer = SenderProgrammer(toolformer)
         if executor is None:
-            executor = UnsafeExecutor()
+            executor = RestrictedExecutor()
         if querier is None:
             querier = Querier(toolformer)
         if transporter is None:
