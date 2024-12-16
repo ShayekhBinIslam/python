@@ -138,6 +138,7 @@ class Querier:
         def register_error(error):
             nonlocal found_error
             found_error = error
+            # We do not raise immediately because this would be caught by some models
             return 'Error registered. Finish the message and allow the user to speak.'
 
         error_tool = Tool('error', 'Return an error message to the machine.', [

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import requests
+from typing import List
 
 from common.core import Conversation
 
@@ -11,14 +12,14 @@ class SenderTransporter(ABC):
 
 class SimpleSenderTransporter(SenderTransporter):
     class SimpleExternalConversation(Conversation):
-        def __init__(self, target, multiround, protocol_hash, protocol_sources):
+        def __init__(self, target : str, multiround : bool, protocol_hash : str, protocol_sources : List[str]):
             self.target = target
             self.multiround = multiround
             self.protocol_hash = protocol_hash
             self.protocol_sources = protocol_sources
             self._conversation_id = None
 
-        def __call__(self, query):
+        def __call__(self, message : str):
             if self._conversation_id is None:
                 target_url = self.target
             else:
@@ -27,7 +28,7 @@ class SimpleSenderTransporter(SenderTransporter):
             raw_query = {
                 'protocolHash': self.protocol_hash,
                 'protocolSources': self.protocol_sources,
-                'body': query
+                'body': message
             }
 
             if self.multiround:

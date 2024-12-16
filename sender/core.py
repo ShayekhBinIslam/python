@@ -206,7 +206,7 @@ class Sender:
         
         return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
-    def negotiate_protocol(self, task_schema, target) -> Optional[Protocol]:
+    def negotiate_protocol(self, task_schema, target : str) -> Optional[Protocol]:
         with self.transporter.new_conversation(target, True, 'negotiation', None) as external_conversation:
             def send_query(query):
                 response = external_conversation(query)
@@ -238,7 +238,7 @@ class Sender:
 
         return suitable_protocol
     
-    def get_implementation(self, protocol_id, task_schema):
+    def get_implementation(self, protocol_id : str, task_schema):
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
@@ -249,7 +249,7 @@ class Sender:
 
         return implementation
     
-    def run_routine(self, protocol_id, implementation, task_data, callback):
+    def run_routine(self, protocol_id : str, implementation : str, task_data, callback):
         send_query_tool = Tool('send_to_server', 'Send a query to the other service based on a protocol document.', [
             StringParameter('query', 'The query to send to the service', True)
         ], lambda x: callback(x)['body']) # TODO: Handle errors

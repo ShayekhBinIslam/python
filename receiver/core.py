@@ -38,24 +38,24 @@ class ReceiverMemory:
         }
         self.storage.save_memory()
 
-    def get_protocol(self, protocol_id):
+    def get_protocol(self, protocol_id : str):
         if protocol_id not in self.storage['protocols']:
             return None
 
         protocol_info = self.storage['protocols'][protocol_id]
         return Protocol(protocol_info['protocol'], protocol_info['sources'], protocol_info['metadata'])
     
-    def set_suitability(self, protocol_id, suitability):
+    def set_suitability(self, protocol_id : str, suitability : Suitability):
         self.storage['protocols'][protocol_id]['suitability'] = suitability
         self.storage.save_memory()
     
-    def is_unknown(self, protocol_id):
+    def is_unknown(self, protocol_id : str):
         return protocol_id not in self.storage['protocols']
     
-    def is_adequate(self, protocol_id):
+    def is_adequate(self, protocol_id : str):
         return self.storage['protocols'][protocol_id]['suitability'] == Suitability.ADEQUATE
     
-    def get_implementation(self, protocol_id):
+    def get_implementation(self, protocol_id : str):
         # TODO: Should the implementation be included in Protocol?
         if protocol_id not in self.storage['protocols']:
             return None
@@ -105,13 +105,13 @@ class Receiver:
 
         return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info)
     
-    def get_implementation(self, protocol_id):
+    def get_implementation(self, protocol_id : str):
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
         if implementation is None: # TODO: Decide when to implement # and self.memory.get_task_conversations(protocol_id, None) > -1:
             protocol = self.memory.get_protocol(protocol_id)
-            implementation = self.programmer(self.tools, protocol.protocol_document)
+            implementation = self.programmer(self.tools, protocol.protocol_document, protocol.metadata.get('multiround', False))
             self.memory.register_implementation(protocol_id, implementation)
 
         return implementation
