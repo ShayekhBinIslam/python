@@ -31,7 +31,7 @@ class ReceiverMemory:
     def register_new_protocol(self, protocol_id, protocol_sources, protocol_document, metadata):
         self.storage['protocols'][protocol_id] = {
             'sources': protocol_sources,
-            'protocol': protocol_document, # TODO: Rename to 'document'?
+            'document': protocol_document,
             'metadata': metadata,
             'suitability' : Suitability.UNKNOWN,
             'implementation' : None
@@ -43,7 +43,7 @@ class ReceiverMemory:
             return None
 
         protocol_info = self.storage['protocols'][protocol_id]
-        return Protocol(protocol_info['protocol'], protocol_info['sources'], protocol_info['metadata'])
+        return Protocol(protocol_info['document'], protocol_info['sources'], protocol_info['metadata'])
     
     def set_suitability(self, protocol_id : str, suitability : Suitability):
         self.storage['protocols'][protocol_id]['suitability'] = suitability
