@@ -3,7 +3,7 @@ import os
 from typing import List
 import warnings
 
-from toolformers.base import Conversation, Toolformer, Tool
+from common.toolformers.base import Conversation, Toolformer, Tool, ToolLike
 from camel.messages import BaseMessage
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
@@ -48,17 +48,19 @@ class CamelToolformer(Toolformer):
         else:
             return self._name
 
-    def new_conversation(self, prompt, tools : List[Tool], category=None) -> Conversation:
+    def new_conversation(self, prompt : str, tools : List[ToolLike], category=None) -> Conversation:
         model = ModelFactory.create(
             model_platform=self.model_platform,
             model_type=self.model_type,
-            model_config_dict=self.model_config_dict
+            model_config_dict=dict(self.model_config_dict)
         )
+
+        tools = [Tool.from_toollike(tool) for tool in tools]
 
         agent = ChatAgent(
             model=model,
             system_message=bm.make_assistant_message('system', prompt),
-            tools=[FunctionTool(tool.as_executable_function(), openai_tool_schema=tool.as_openai_info()) for tool in tools]
+            tools=[FunctionTool(tool.func, openai_tool_schema=tool.openai_schema) for tool in tools]
         )
 
         return CamelConversation(self, agent, category)

@@ -5,7 +5,6 @@ from RestrictedPython.Guards import guarded_iter_unpack_sequence, guarded_unpack
 
 def execute_restricted(code, extra_globals=None, supported_imports=None, function_name='run', input_args=None, input_kwargs=None):
     extra_globals = extra_globals or {}
-    extra_locals = extra_locals or {}
     supported_imports = supported_imports or []
     input_args = input_args or []
     input_kwargs = input_kwargs or {}

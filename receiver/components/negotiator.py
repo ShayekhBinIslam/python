@@ -1,4 +1,4 @@
-from toolformers.base import Toolformer
+from common.toolformers.base import Toolformer
 
 NEGOTIATION_RULES = '''
 Here are some rules (that should also be explained to the other GPT):

@@ -3,7 +3,7 @@
 
 from typing import List
 
-from toolformers.base import Tool, Toolformer
+from common.toolformers.base import ToolLike, Toolformer
 
 
 PROTOCOL_RESPONDER_PROMPT = 'You are ResponderGPT. Below you will find a document describing detailing how to respond to a query. '\
@@ -19,7 +19,7 @@ class Responder:
     def __init__(self, toolformer : Toolformer):
         self.toolformer = toolformer
 
-    def create_protocol_conversation(self, protocol_document : str, tools : List[Tool], additional_info : str = ''):
+    def create_protocol_conversation(self, protocol_document : str, tools : List[ToolLike], additional_info : str = ''):
         print('===NL RESPONDER (WITH PROTOCOL)===')
 
         prompt = PROTOCOL_RESPONDER_PROMPT
@@ -32,7 +32,7 @@ class Responder:
         return self.toolformer.new_conversation(prompt, tools, category='conversation')
 
 
-    def create_nl_conversation(self, tools : List[Tool], additional_info : str = ''):
+    def create_nl_conversation(self, tools : List[ToolLike], additional_info : str = ''):
         print('===NL RESPONDER (NO PROTOCOL)===')
 
         print('Preparing NL response with tools:', [tool.name for tool in tools])

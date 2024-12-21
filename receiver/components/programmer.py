@@ -1,6 +1,6 @@
 from typing import List
 
-from toolformers.base import Tool, Toolformer
+from common.toolformers.base import ToolLike, Toolformer
 from utils import extract_substring
 
 NO_MULTIROUND_REPLY = ''' reply takes a single argument, "query", which is a string, and must return a string.
@@ -53,7 +53,7 @@ class ReceiverProgrammer:
         self.toolformer = toolformer
         self.num_attempts = num_attempts
 
-    def __call__(self, tools : List[Tool], protocol_document : str, multiround : bool, additional_info : str = ''):
+    def __call__(self, tools : List[ToolLike], protocol_document : str, multiround : bool, additional_info : str = ''):
         message = 'Protocol document:\n\n' + protocol_document + '\n\n' + 'Additional functions:\n\n'
 
         if len(tools) == 0:

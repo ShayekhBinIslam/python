@@ -1,7 +1,7 @@
 import json
 
 from common.core import Protocol
-from toolformers.base import Toolformer
+from common.toolformers.base import Toolformer
 from utils import extract_metadata, extract_substring
 
 NEGOTIATION_RULES = '''

@@ -3,7 +3,7 @@
 import json
 import os
 
-from toolformers.base import Toolformer
+from common.toolformers.base import Toolformer
 from utils import extract_substring
 
 TASK_PROGRAMMER_PROMPT = '''

@@ -2,7 +2,7 @@ from abc import abstractmethod
 import importlib
 from typing import List
 
-from toolformers.base import Tool, Conversation
+from common.toolformers.base import Tool, Conversation
 from common.interpreters.restricted import execute_restricted
 
 class Executor:
@@ -23,14 +23,14 @@ class UnsafeExecutor(Executor):
         exec(code, loaded_module.__dict__)
 
         for tool in tools:
-            loaded_module.__dict__[tool.name] = tool.as_executable_function()
+            loaded_module.__dict__[tool.name] = tool.func
 
         return loaded_module.run(*input_args, **input_kwargs)
     
 class RestrictedExecutor(Executor):
     def __call__(self, protocol_id : str, code : str, tools : List[Tool], input_args : list, input_kwargs : dict):
         supported_globals = {
-            tool.name : tool.as_executable_function() for tool in tools
+            tool.name : tool.func for tool in tools
         }
         return execute_restricted(code, supported_imports=['json'], function_name='run', extra_globals=supported_globals, input_args=input_args, input_kwargs=input_kwargs)
 

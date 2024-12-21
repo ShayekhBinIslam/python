@@ -10,7 +10,7 @@ from sender.components.transporter import SenderTransporter, SimpleSenderTranspo
 from common.executor import Executor, RestrictedExecutor
 
 from common.core import Suitability
-from toolformers.base import Tool, StringParameter
+from common.toolformers.base import Tool
 
 
 
@@ -91,7 +91,7 @@ class SenderMemory:
 
         protocol_info = self.storage['protocols'][protocol_id]
 
-        return Protocol(protocol_info['protocol'], protocol_info['sources'], protocol_info['metadata'])
+        return Protocol(protocol_info['document'], protocol_info['sources'], protocol_info['metadata'])
 
     def set_default_suitability(self, protocol_id : str, task_id : str, suitability : Suitability):
         if protocol_id not in self.storage['protocols']:
@@ -249,9 +249,22 @@ class Sender:
         return implementation
     
     def run_routine(self, protocol_id : str, implementation : str, task_data, callback):
-        send_query_tool = Tool('send_to_server', 'Send a query to the other service based on a protocol document.', [
-            StringParameter('query', 'The query to send to the service', True)
-        ], lambda x: callback(x)['body']) # TODO: Handle errors
+        def send_to_server(query : str):
+            """
+            Send a query to the other service based on a protocol document.
+
+            Args:
+                query (str): The query to send to the service
+
+            Returns:
+                str: The response from the service
+            """
+
+            response = callback(query)
+            print('Tool run_routine responded with:', response)
+            return response['body']
+
+        send_query_tool = Tool.from_function(send_to_server) # TODO: Handle errors
 
         return self.executor(protocol_id, implementation, [send_query_tool], [task_data], {})
 

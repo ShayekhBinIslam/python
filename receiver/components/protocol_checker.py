@@ -1,6 +1,6 @@
 from typing import List
 
-from toolformers.base import Tool, Toolformer
+from common.toolformers.base import ToolLike, Toolformer
 
 CHECKER_TOOL_PROMPT = 'You are ProtocolCheckerGPT. Your task is to look at the provided protocol and determine if you have access ' \
     'to the tools required to implement it. A protocol is sufficiently expressive if an implementer could write code that, given a query formatted according to the protocol and the tools ' \
@@ -11,7 +11,7 @@ class ReceiverProtocolChecker:
     def __init__(self, toolformer : Toolformer):
         self.toolformer = toolformer
     
-    def __call__(self, protocol_document : str, tools : List[Tool], additional_info : str = ''):
+    def __call__(self, protocol_document : str, tools : List[ToolLike], additional_info : str = ''):
         message = 'Protocol document:\n\n' + protocol_document + '\n\n' + 'Functions that the implementer will have access to:\n\n'
 
         if len(tools) == 0:

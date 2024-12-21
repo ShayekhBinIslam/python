@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
 from typing import List
 from common.core import Suitability, Protocol
 
-from toolformers.base import Tool
+from common.toolformers.base import ToolLike
 from common.storage import Storage, JSONStorage
 from common.executor import Executor, RestrictedExecutor
 from receiver.components.responder import Responder
@@ -69,7 +68,7 @@ class ReceiverMemory:
         self.storage.save_memory()
 
 class Receiver:
-    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, executor: Executor, tools: List[Tool], additional_info : str = ''):
+    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, executor: Executor, tools: List[ToolLike], additional_info : str = ''):
         self.memory = ReceiverMemory(storage)
         self.responder = responder
         self.protocol_checker = protocol_checker
@@ -80,7 +79,7 @@ class Receiver:
         self.additional_info = additional_info
 
     @staticmethod
-    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, executor : Executor = None, tools : List[Tool] = None, additional_info : str = ''):
+    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, executor : Executor = None, tools : List[ToolLike] = None, additional_info : str = ''):
         if tools is None:
             tools = []
 

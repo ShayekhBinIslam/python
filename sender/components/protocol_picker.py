@@ -2,7 +2,7 @@ import json
 from typing import List
 
 from common.core import Protocol, Suitability
-from toolformers.base import Toolformer
+from common.toolformers.base import Toolformer
 
 CHECKER_TASK_PROMPT = 'You are ProtocolCheckerGPT. Your task is to look at the provided protocol and determine if it is expressive ' \
     'enough to fullfill the required task (of which you\'ll receive a JSON schema). A protocol is sufficiently expressive if you could write code that, given the input data, sends ' \
