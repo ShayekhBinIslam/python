@@ -1,6 +1,4 @@
-import json
-
-from common.core import Protocol
+from common.core import Protocol, TaskSchema, TaskSchemaLike
 from common.toolformers.base import Toolformer
 from utils import extract_metadata, extract_substring
 
@@ -43,10 +41,11 @@ class SenderNegotiator:
         self.toolformer = toolformer
         self.max_rounds = max_rounds
 
-    def negotiate_protocol_for_task(self, task_schema, callback, additional_info : str = ''):
+    def negotiate_protocol_for_task(self, task_schema : TaskSchemaLike, callback, additional_info : str = ''):
+        task_schema = TaskSchema.from_taskschemalike(task_schema)
         found_protocol = None
 
-        prompt = TASK_NEGOTIATOR_PROMPT + '\nThe JSON schema of the task is the following:\n\n' + json.dumps(task_schema, indent=2)
+        prompt = TASK_NEGOTIATOR_PROMPT + '\nThe JSON schema of the task is the following:\n\n' + str(task_schema)
 
         if additional_info:
             prompt += '\n\n' + additional_info

@@ -2,10 +2,10 @@
 # It receives the protocol document and writes the query that must be performed to the system.
 
 import json
-import sys
 from typing import Callable, Dict
 
-from common.toolformers.base import ToolLike, Toolformer, Tool
+from common.core import TaskSchema, TaskSchemaLike
+from common.toolformers.base import Toolformer, Tool
 
 PROTOCOL_QUERIER_PROMPT = 'You are NaturalLanguageQuerierGPT. You act as an intermediary between a machine (who has a very specific input and output schema) and an external service (which follows a very specific protocol).' \
     'You will receive a task description (including a schema of the input and output that the machine uses) and the corresponding data. Call the \"send_query\" tool with a message following the protocol.' \
@@ -16,13 +16,14 @@ PROTOCOL_QUERIER_PROMPT = 'You are NaturalLanguageQuerierGPT. You act as an inte
     'Once you receive the reply, call the "deliverStructuredOutput" tool with parameters according to the task\'s output schema. \n' \
     'You cannot call deliverStructuredOutput multiple times, so make sure to deliver the right output the first time.' \
     'If there is an error and the machine\'s input/output schema specifies how to handle an error, return the error in that format. Otherwise, call the "error" tool.' \
-    #'Also, if the query fails to .'
 
-def construct_query_description(protocol_document : str, task_schema, task_data):
+def construct_query_description(protocol_document : str, task_schema : TaskSchemaLike, task_data):
     query_description = ''
     if protocol_document is not None:
         query_description += 'Protocol document:\n\n'
         query_description += protocol_document + '\n\n'
+
+    task_schema = TaskSchema.from_taskschemalike(task_schema).to_json()
     query_description += 'JSON schema of the task:\n\n'
     query_description += 'Input (i.e. what the machine will provide you):\n'
     query_description += json.dumps(task_schema['input'], indent=2) + '\n\n'
@@ -157,7 +158,7 @@ class Querier:
 
         return found_output
     
-    def __call__(self, task_schema, task_data, protocol_document, callback):
+    def __call__(self, task_schema : TaskSchemaLike, task_data, protocol_document : str, callback):
         query_description = construct_query_description(protocol_document, task_schema, task_data)
         output_schema = task_schema['output'] # TODO: Should I just use tuples? Do pydantic & co. work with complex dicts?
 

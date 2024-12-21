@@ -1,8 +1,8 @@
 # The programmer creates implementations depending on a protocol specification
 
 import json
-import os
 
+from common.core import TaskSchema, TaskSchemaLike
 from common.toolformers.base import Toolformer
 from utils import extract_substring
 
@@ -44,9 +44,10 @@ class SenderProgrammer:
         self.toolformer = toolformer
         self.num_attempts = num_attempts
 
-    def __call__(self, task_schema, protocol_document : str):
+    def __call__(self, task_schema : TaskSchemaLike, protocol_document : str):
+        task_schema = TaskSchema.from_taskschemalike(task_schema)
         conversation = self.toolformer.new_conversation(TASK_PROGRAMMER_PROMPT, [], category='programming')
-        message = 'JSON schema:\n\n' + json.dumps(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document
+        message = 'JSON schema:\n\n' + str(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document
 
         for _ in range(self.num_attempts):
             reply = conversation(message, print_output=True)

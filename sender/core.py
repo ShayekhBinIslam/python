@@ -9,9 +9,10 @@ from sender.components.querier import Querier
 from sender.components.transporter import SenderTransporter, SimpleSenderTransporter
 from common.executor import Executor, RestrictedExecutor
 
-from common.core import Suitability
+from common.core import Suitability, TaskSchemaLike
 from common.toolformers.base import Tool
 
+from utils import encode_as_data_uri
 
 
 class SenderMemory:
@@ -205,7 +206,7 @@ class Sender:
         
         return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
-    def negotiate_protocol(self, task_schema, target : str) -> Optional[Protocol]:
+    def negotiate_protocol(self, task_schema : TaskSchemaLike, target : str) -> Optional[Protocol]:
         with self.transporter.new_conversation(target, True, 'negotiation', None) as external_conversation:
             def send_query(query):
                 response = external_conversation(query)
@@ -220,7 +221,7 @@ class Sender:
 
         return protocol
 
-    def get_suitable_protocol(self, task_id : str, task_schema, target : str) -> Optional[Protocol]:
+    def get_suitable_protocol(self, task_id : str, task_schema : TaskSchemaLike, target : str) -> Optional[Protocol]:
         # Look in the memory
         suitable_protocol = self.memory.get_suitable_protocol(task_id, target)
 
@@ -268,20 +269,19 @@ class Sender:
 
         return self.executor(protocol_id, implementation, [send_query_tool], [task_data], {})
 
-    def execute_task(self, task_id, task_schema, task_data, target):
-        # TODO: The sender components (querier, programmer, negotiator) should be aware of any tools that are available + additional info.
-
+    # TODO: force_no_protocol, force_no_implementation, force_multiround
+    def execute_task(self, task_id : str, task_schema : TaskSchemaLike, task_data, target : str):
         self.memory.increment_task_conversations(task_id, target)
 
         protocol = self.get_suitable_protocol(task_id, task_schema, target)
 
-        # TODO: multiround depends on the protocol
+        # TODO: Some standardized way to support data URIs
         with self.transporter.new_conversation(
             target,
             protocol.metadata['multiround'] if protocol else True,
             protocol.hash if protocol else None,
-            protocol.sources if protocol else None
-        )
+            # Temp
+            [encode_as_data_uri(protocol.protocol_document) if protocol else []]
         ) as external_conversation:
             def send_query(query):
                 response = external_conversation(query)
