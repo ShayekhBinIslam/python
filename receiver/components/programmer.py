@@ -1,6 +1,6 @@
 from typing import List
 
-from common.toolformers.base import ToolLike, Toolformer
+from common.toolformers.base import Tool, ToolLike, Toolformer
 from utils import extract_substring
 
 NO_MULTIROUND_REPLY = ''' reply takes a single argument, "query", which is a string, and must return a string.
@@ -60,7 +60,8 @@ class ReceiverProgrammer:
             message += 'No additional functions provided'
         else:
             for tool in tools:
-                message += tool.as_documented_python() + '\n\n'
+                tool = Tool.from_toollike(tool)
+                message += str(tool) + '\n\n'
 
         prompt = TOOL_PROGRAMMER_PROMPT.format(
             reply_description=MULTIROUND_REPLY if multiround else NO_MULTIROUND_REPLY,

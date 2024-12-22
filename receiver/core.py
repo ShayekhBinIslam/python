@@ -47,13 +47,13 @@ class ReceiverMemory:
     def set_suitability(self, protocol_id : str, suitability : Suitability):
         self.storage['protocols'][protocol_id]['suitability'] = suitability
         self.storage.save_memory()
+
+    def get_suitability(self, protocol_id : str) -> Suitability:
+        return self.storage['protocols'][protocol_id]['suitability']
     
     def is_unknown(self, protocol_id : str):
         return protocol_id not in self.storage['protocols']
-    
-    def is_adequate(self, protocol_id : str):
-        return self.storage['protocols'][protocol_id]['suitability'] == Suitability.ADEQUATE
-    
+
     def get_implementation(self, protocol_id : str):
         # TODO: Should the implementation be included in Protocol?
         if protocol_id not in self.storage['protocols']:
@@ -135,14 +135,17 @@ class Receiver:
                 metadata = extract_metadata(protocol_document)
                 self.memory.register_new_protocol(protocol_hash, protocol_sources, protocol_document, metadata)
 
+            protocol = self.memory.get_protocol(protocol_hash)
+            protocol_document = protocol.protocol_document
+            metadata = protocol.metadata
+
+            if self.memory.get_suitability(protocol_hash) == Suitability.UNKNOWN:
                 if self.protocol_checker(protocol_document, self.tools):
                     self.memory.set_suitability(protocol_hash, Suitability.ADEQUATE)
                 else:
                     self.memory.set_suitability(protocol_hash, Suitability.INADEQUATE)
-            else:
-                metadata = self.memory.get_protocol(protocol_hash).metadata
 
-            if self.memory.is_adequate(protocol_hash):
+            if self.memory.get_suitability(protocol_hash) == Suitability.ADEQUATE:
                 protocol_document = self.memory.get_protocol(protocol_hash).protocol_document
             else:
                 raise Exception('Unsuitable protocol')

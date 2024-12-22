@@ -1,3 +1,6 @@
+from typing import List
+
+from common.toolformers.base import Tool, ToolLike
 from common.toolformers.base import Toolformer
 
 NEGOTIATION_RULES = '''
@@ -29,7 +32,7 @@ class ReceiverNegotiator:
     def __init__(self, toolformer : Toolformer):
         self.toolformer = toolformer
 
-    def create_conversation(self, tools, additional_info : str = ''):
+    def create_conversation(self, tools : List[ToolLike], additional_info : str = ''):
         prompt = TOOLS_NEGOTIATOR_PROMPT
 
         if additional_info:
@@ -41,6 +44,7 @@ class ReceiverNegotiator:
             prompt += 'No additional tools provided'
         else:
             for tool in tools:
-                prompt += tool.as_documented_python() + '\n\n'
+                tool = Tool.from_toollike(tool)
+                prompt += str(tool) + '\n\n'
 
         return self.toolformer.new_conversation(prompt, tools, category='negotiation')

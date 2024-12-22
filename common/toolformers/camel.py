@@ -19,10 +19,6 @@ class CamelConversation(Conversation):
         self.category = category
     
     def __call__(self, message, print_output=True):
-        agent_id = os.environ.get('AGENT_ID', None)
-
-        start_time = datetime.datetime.now()
-
         formatted_message = BaseMessage.make_user_message('user', message)
         
         response = self.agent.step(formatted_message)
@@ -65,7 +61,7 @@ class CamelToolformer(Toolformer):
 
         return CamelConversation(self, agent, category)
 
-def make_openai_toolformer(model_type_internal, system_prompt, tools : List[Tool]):
+def make_openai_toolformer(model_type_internal, system_prompt, tools : List[ToolLike]):
     if model_type_internal == 'gpt-4o':
         model_type = ModelType.GPT_4O
     elif model_type_internal == 'gpt-4o-mini':
@@ -73,7 +69,9 @@ def make_openai_toolformer(model_type_internal, system_prompt, tools : List[Tool
     else:
         raise ValueError('Model type must be either "gpt-4o" or "gpt-4o-mini".')
 
-    formatted_tools = [FunctionTool(tool.call_tool_for_toolformer, tool.as_openai_info()) for tool in tools]
+    # TODO: Drop
+
+    formatted_tools = [FunctionTool(tool.func, tool.openai_schema) for tool in tools]
 
     return CamelToolformer(
         model_platform=ModelPlatformType.OPENAI,

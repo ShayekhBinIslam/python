@@ -9,7 +9,7 @@ from sender.components.querier import Querier
 from sender.components.transporter import SenderTransporter, SimpleSenderTransporter
 from common.executor import Executor, RestrictedExecutor
 
-from common.core import Suitability, TaskSchemaLike
+from common.core import Suitability, TaskSchema, TaskSchemaLike
 from common.toolformers.base import Tool
 
 from utils import encode_as_data_uri
@@ -125,7 +125,7 @@ class SenderMemory:
             raise Exception('Protocol already in memory:', protocol_id)
         
         self.storage['protocols'][protocol_id] = {
-            'protocol': protocol_document,
+            'document': protocol_document,
             'sources': sources,
             'metadata': metadata,
             'suitability': {

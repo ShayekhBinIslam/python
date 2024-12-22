@@ -1,17 +1,8 @@
 from abc import ABC, abstractmethod
-import ast
-import copy
-import inspect
-import re
-import types
-from typing import Callable, List, Optional, TypeAlias
+from typing import Callable, Optional, TypeAlias
 
 from common.core import Conversation
 from common.function_schema import DEFAULT_KNOWN_TYPES, PYTHON_TYPE_TO_JSON_SCHEMA_TYPE, schema_from_function
-
-import langchain.tools.base
-
-
 
 
 class Tool:
@@ -93,13 +84,18 @@ class Tool:
             s += '\nNo arguments.'
         else:
             s += '\nArguments:\n'
-            for arg_name, arg_schema in self.args_schema.items():
+            for arg_name, arg_schema in self.args_schema['properties'].items():
                 arg_type = inverted_types[arg_schema['type']].__name__
-                s += f'    {arg_name} ({arg_type}): {arg_schema["description"]}\n'
+                s += f'    {arg_name} ({arg_type}): {arg_schema["description"]}'
+
+                if arg_name in self.args_schema.get('required', []):
+                    s += ' (required)'
+
+                s += '\n'
 
         if self.returns_schema:
             return_type = inverted_types[self.returns_schema['type']].__name__
-            s += f'\nReturns:\n    {return_type}: {self.returns_schema["description"]}'
+            s += f'\nReturns:\n    {return_type}: {self.returns_schema.get("description", "")}'
         
         return s
 
