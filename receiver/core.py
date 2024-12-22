@@ -2,6 +2,7 @@ from typing import List
 from common.core import Suitability, Protocol
 
 from common.toolformers.base import ToolLike
+from common.memory import ProtocolMemory
 from common.storage import Storage, JSONStorage
 from common.executor import Executor, RestrictedExecutor
 from receiver.components.responder import Responder
@@ -12,60 +13,22 @@ from receiver.components.programmer import ReceiverProgrammer
 from utils import download_and_verify_protocol, extract_metadata
 
 
-class ReceiverMemory:
-    def __init__(self, storage : Storage):
-        self.storage = storage
-
-        self.storage.load_memory()
-
-        if 'protocols' not in self.storage:
-            self.storage['protocols'] = {}
-
-        # TODO: Track conversations
-        #if 'num_conversations' not in self.storage:
-        #    self.storage['num_conversations'] = {}
-
-        self.storage.save_memory()
-
+class ReceiverMemory(ProtocolMemory):
     def register_new_protocol(self, protocol_id, protocol_sources, protocol_document, metadata):
-        self.storage['protocols'][protocol_id] = {
-            'sources': protocol_sources,
-            'document': protocol_document,
-            'metadata': metadata,
-            'suitability' : Suitability.UNKNOWN,
-            'implementation' : None
-        }
-        self.storage.save_memory()
+        super().register_new_protocol(
+            protocol_id,
+            protocol_document,
+            protocol_sources,
+            metadata,
+            None,
+            suitability=Suitability.UNKNOWN,
+        )
 
-    def get_protocol(self, protocol_id : str):
-        if protocol_id not in self.storage['protocols']:
-            return None
-
-        protocol_info = self.storage['protocols'][protocol_id]
-        return Protocol(protocol_info['document'], protocol_info['sources'], protocol_info['metadata'])
-    
     def set_suitability(self, protocol_id : str, suitability : Suitability):
-        self.storage['protocols'][protocol_id]['suitability'] = suitability
-        self.storage.save_memory()
+        super().set_extra_field(protocol_id, 'suitability', suitability)
 
     def get_suitability(self, protocol_id : str) -> Suitability:
-        return self.storage['protocols'][protocol_id]['suitability']
-    
-    def is_unknown(self, protocol_id : str):
-        return protocol_id not in self.storage['protocols']
-
-    def get_implementation(self, protocol_id : str):
-        # TODO: Should the implementation be included in Protocol?
-        if protocol_id not in self.storage['protocols']:
-            return None
-        return self.storage['protocols'][protocol_id]['implementation']
-    
-    def register_implementation(self, protocol_id, implementation):
-        if protocol_id not in self.storage['protocols']:
-            raise Exception('Protocol not in memory:', protocol_id)
-
-        self.storage['protocols'][protocol_id]['implementation'] = implementation
-        self.storage.save_memory()
+        return self.get_extra_field(protocol_id, 'suitability', Suitability.UNKNOWN)
 
 class Receiver:
     def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, executor: Executor, tools: List[ToolLike], additional_info : str = ''):
@@ -123,7 +86,7 @@ class Receiver:
         implementation = None
 
         if protocol_hash is not None:
-            if self.memory.is_unknown(protocol_hash):
+            if not self.memory.is_known(protocol_hash):
                 for protocol_source in protocol_sources:
                     protocol_document = download_and_verify_protocol(protocol_hash, protocol_source)
                     if protocol_document is not None:

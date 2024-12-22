@@ -10,40 +10,28 @@ from sender.components.transporter import SenderTransporter, SimpleSenderTranspo
 from common.executor import Executor, RestrictedExecutor
 
 from common.core import Suitability, TaskSchema, TaskSchemaLike
+from common.memory import ProtocolMemory
 from common.toolformers.base import Tool
 
 from utils import encode_as_data_uri
 
-
-class SenderMemory:
+class SenderMemory(ProtocolMemory):
     def __init__(self, storage : Storage):
-        self.storage = storage
-
-        self.storage.load_memory()
-
-        if 'protocols' not in self.storage:
-            self.storage['protocols'] = {}
-        
-        if 'num_conversations' not in self.storage:
-            self.storage['num_conversations'] = {}
-        self.storage.save_memory()
-    
+        super().__init__(storage, num_conversations={})
     def get_suitability(self, protocol_id : str, task_id : str, target : Optional[str]) -> Suitability:
-        if protocol_id not in self.storage['protocols']:
+        suitability_info = super().get_extra_field(protocol_id, 'suitability', {})
+
+        if task_id not in suitability_info:
             return Suitability.UNKNOWN
-
-        if task_id not in self.storage['protocols'][protocol_id]['suitability']:
-            return Suitability.UNKNOWN
-
-        suitability = self.storage['protocols'][protocol_id]['suitability'][task_id]['default']
-        if target is not None and target in self.storage['protocols'][protocol_id]['suitability'][task_id]['overrides']:
-            suitability = self.storage['protocols'][protocol_id]['suitability'][task_id]['overrides'][target]
-
-        return suitability
+        
+        if target is not None and target in suitability_info[task_id]['overrides']:
+            return suitability_info[task_id]['overrides'][target]
+        
+        return suitability_info[task_id]['default']
 
     def get_known_suitable_protocol_ids(self, task_id, target):
         suitable_protocols = []
-        for protocol_id in self.storage['protocols'].keys():
+        for protocol_id in self.protocol_ids():
             if self.get_suitability(protocol_id, task_id, target) == Suitability.ADEQUATE:
                 suitable_protocols.append(protocol_id)
 
@@ -78,75 +66,49 @@ class SenderMemory:
     
     def get_unclassified_protocols(self, task_id):
         unclassified_protocols = []
-        for protocol_id in self.storage['protocols'].keys():
+        for protocol_id in self.protocol_ids():
             if self.get_suitability(protocol_id, task_id, None) == Suitability.UNKNOWN:
                 unclassified_protocols.append(protocol_id)
 
         return unclassified_protocols
-    
-    def get_protocol(self, protocol_id):
-        if 'protocols' not in self.storage:
-            return None
-        if protocol_id not in self.storage['protocols']:
-            return None
-
-        protocol_info = self.storage['protocols'][protocol_id]
-
-        return Protocol(protocol_info['document'], protocol_info['sources'], protocol_info['metadata'])
 
     def set_default_suitability(self, protocol_id : str, task_id : str, suitability : Suitability):
-        if protocol_id not in self.storage['protocols']:
-            raise Exception('Protocol not in memory:', protocol_id)
+        suitability_info = self.get_extra_field(protocol_id, 'suitability', {})
 
-        if task_id not in self.storage['protocols'][protocol_id]['suitability']:
-            self.storage['protocols'][protocol_id]['suitability'][task_id] = {
+        if task_id not in suitability_info:
+            suitability_info[task_id] = {
                 'default': Suitability.UNKNOWN,
                 'overrides': {}
             }
-        
-        self.storage['protocols'][protocol_id]['suitability'][task_id]['default'] = suitability
-        self.storage.save_memory()
+
+        suitability_info[task_id]['default'] = suitability
+
+        self.set_extra_field(protocol_id, 'suitability', suitability_info)
 
     def set_suitability_override(self, protocol_id : str, task_id : str, target : str, suitability : Suitability):
-        if protocol_id not in self.storage['protocols']:
-            raise Exception('Protocol not in memory:', protocol_id)
-        
-        if task_id not in self.storage['protocols'][protocol_id]['suitability']:
-            self.storage['protocols'][protocol_id]['suitability'][task_id] = {
+        suitability_info = self.get_extra_field(protocol_id, 'suitability', {})
+
+        if task_id not in suitability_info:
+            suitability_info[task_id] = {
                 'default': Suitability.UNKNOWN,
                 'overrides': {}
             }
         
-        self.storage['protocols'][protocol_id]['suitability'][task_id]['overrides'][target] = suitability
-        self.storage.save_memory()
+        suitability_info[task_id]['overrides'][target] = suitability
+        self.set_extra_field(protocol_id, 'suitability', suitability_info)
 
     def register_new_protocol(self, protocol_id : str, protocol_document : str, sources : list, metadata : dict):
         if protocol_id in self.storage['protocols']:
             raise Exception('Protocol already in memory:', protocol_id)
         
-        self.storage['protocols'][protocol_id] = {
-            'document': protocol_document,
-            'sources': sources,
-            'metadata': metadata,
-            'suitability': {
-                'default': Suitability.UNKNOWN,
-                'overrides': {}
-            },
-            'implementation': None # TODO: Should the protocol and the implementation be in a different storage?
-        }
-        self.storage.save_memory()
-
-    def get_implementation(self, protocol_id):
-        # TODO: Should the implementation be included in Protocol?
-        if protocol_id not in self.storage['protocols']:
-            return None
-        return self.storage['protocols'][protocol_id]['implementation']
-    
-    def register_implementation(self, protocol_id, implementation):
-        if protocol_id not in self.storage['protocols']:
-            raise Exception('Protocol not in memory:', protocol_id)
-        self.storage['protocols'][protocol_id]['implementation'] = implementation
-        self.storage.save_memory()
+        super().register_new_protocol(
+            protocol_id,
+            protocol_document,
+            sources,
+            metadata,
+            None,
+            suitability={}
+        )
 
 
 class Sender:
