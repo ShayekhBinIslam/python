@@ -1,3 +1,4 @@
+import inspect
 from typing import Optional
 
 from common.core import Protocol
@@ -18,6 +19,7 @@ from utils import encode_as_data_uri
 class SenderMemory(ProtocolMemory):
     def __init__(self, storage : Storage):
         super().__init__(storage, num_conversations={})
+
     def get_suitability(self, protocol_id : str, task_id : str, target : Optional[str]) -> Suitability:
         suitability_info = super().get_extra_field(protocol_id, 'suitability', {})
 
@@ -261,3 +263,24 @@ class Sender:
                 response = self.run_routine(protocol.hash, implementation, task_data, send_query)
 
             return response
+
+    def task(self, task_id : Optional[str] = None, description : Optional[str] = None, input_schema : Optional[dict] = None, output_schema : Optional[dict] = None):
+        def wrapper(func):
+            nonlocal task_id
+
+            if task_id is None:
+                task_id = func.__name__
+            task_schema = TaskSchema.from_function(func, description=description, input_schema=input_schema, output_schema=output_schema)
+
+            def wrapped(*args, target=None, **kwargs):
+                # Figure out from the function signature what the input data should be
+                signature = inspect.signature(func)
+                task_data = signature.bind(*args, **kwargs)
+                task_data.apply_defaults()
+                task_data = task_data.arguments
+
+                return self.execute_task(task_id, task_schema, task_data, target)
+
+            return wrapped
+
+        return wrapper
