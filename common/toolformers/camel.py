@@ -1,19 +1,14 @@
-import datetime
-import os
 from typing import List
-import warnings
 
 from common.toolformers.base import Conversation, Toolformer, Tool, ToolLike
 from camel.messages import BaseMessage
 from camel.models import ModelFactory
-from camel.types import ModelPlatformType, ModelType
 from camel.messages import BaseMessage as bm
 from camel.agents import ChatAgent
 from camel.toolkits.function_tool import FunctionTool
-from camel.configs.openai_config import ChatGPTConfig
 
 class CamelConversation(Conversation):
-    def __init__(self, toolformer, agent : ChatAgent, category=None):
+    def __init__(self, toolformer : 'CamelToolformer', agent : ChatAgent, category=None):
         self.toolformer = toolformer
         self.agent = agent
         self.category = category
@@ -60,24 +55,3 @@ class CamelToolformer(Toolformer):
         )
 
         return CamelConversation(self, agent, category)
-
-def make_openai_toolformer(model_type_internal, system_prompt, tools : List[ToolLike]):
-    if model_type_internal == 'gpt-4o':
-        model_type = ModelType.GPT_4O
-    elif model_type_internal == 'gpt-4o-mini':
-        model_type = ModelType.GPT_4O_MINI
-    else:
-        raise ValueError('Model type must be either "gpt-4o" or "gpt-4o-mini".')
-
-    # TODO: Drop
-
-    formatted_tools = [FunctionTool(tool.func, tool.openai_schema) for tool in tools]
-
-    return CamelToolformer(
-        model_platform=ModelPlatformType.OPENAI,
-        model_type=model_type,
-        model_config_dict=ChatGPTConfig(temperature=0.2, tools=formatted_tools).as_dict(),
-        system_prompt=system_prompt,
-        tools=formatted_tools,
-        name=model_type_internal
-    )
