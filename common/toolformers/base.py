@@ -75,8 +75,24 @@ class Tool:
         else:
             raise ValueError("Tool-like object must be either a Tool or a callable")
     
-    def __str__(self):
-        s = f'Tool({self.name})\n{self.description}\n'
+    def _format(self, style='default'):
+        if style == 'default':
+            s = f'Tool({self.name})\n'
+        elif style == 'python':
+            s = f'def {self.name}('
+
+            signature_args = []
+
+            for arg_name, arg_schema in self.args_schema['properties'].items():
+                arg_type = PYTHON_TYPE_TO_JSON_SCHEMA_TYPE[arg_schema['type']].__name__
+                #s += f'{arg_name}: {arg_type}, '
+                signature_args.append(f'{arg_name}: {arg_type}')
+            s += ', '.join(signature_args)
+            s += '):\n'
+        else:
+            raise ValueError(f'Unknown style: {style}')
+        
+        s += f'    {self.description}\n'
 
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
 
@@ -98,6 +114,13 @@ class Tool:
             s += f'\nReturns:\n    {return_type}: {self.returns_schema.get("description", "")}'
         
         return s
+
+    def __str__(self):
+        return self._format(style='default')
+
+    def as_documented_python(self):
+        return self._format(style='python')
+        
 
 ToolLike: TypeAlias = Callable | Tool
 

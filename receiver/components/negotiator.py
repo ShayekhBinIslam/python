@@ -45,6 +45,6 @@ class ReceiverNegotiator:
         else:
             for tool in tools:
                 tool = Tool.from_toollike(tool)
-                prompt += str(tool) + '\n\n'
+                prompt += tool.as_documented_python() + '\n\n'
 
         return self.toolformer.new_conversation(prompt, tools, category='negotiation')
