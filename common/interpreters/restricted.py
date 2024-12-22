@@ -1,6 +1,6 @@
 import random
 
-from RestrictedPython import compile_restricted, safe_builtins
+from RestrictedPython import compile_restricted, safe_builtins, limited_builtins, utility_builtins
 from RestrictedPython.Guards import guarded_iter_unpack_sequence, guarded_unpack_sequence, full_write_guard
 
 def execute_restricted(code, extra_globals=None, supported_imports=None, function_name='run', input_args=None, input_kwargs=None):
@@ -40,7 +40,9 @@ input_args, input_kwargs = {get_parameters_name}()
     restricted_globals =  {
         '__builtins__': {
             **safe_builtins,
-            '__import__': _safe_import,
+            **limited_builtins,
+            **utility_builtins,
+            '__import__': _safe_import
         },
         '_iter_unpack_sequence_': guarded_iter_unpack_sequence,
         '_unpack_sequence_': guarded_unpack_sequence,
@@ -51,6 +53,9 @@ input_args, input_kwargs = {get_parameters_name}()
         '_write_': full_write_guard,
         get_parameters_name: get_parameters,
         register_function_name: register_result,
+        'map': map,
+        'list': list,
+        'dict': dict,
         **extra_globals
     }
     exec(restricted_code, restricted_globals)
