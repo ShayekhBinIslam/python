@@ -3,9 +3,11 @@ import hashlib
 import requests
 import urllib.parse
 
-def extract_substring(text, start_tag, end_tag):
+import yaml
+
+def extract_substring(text : str, start_tag : str, end_tag : str):
     start_position = text.lower().find(start_tag.lower())
-    end_position = text.lower().find(end_tag.lower())
+    end_position = text.lower().find(end_tag.lower(), start_position + len(start_tag))
 
     if start_position == -1 or end_position == -1:
         return None
@@ -34,17 +36,21 @@ def compute_hash(s):
     return base64.b64encode(b).decode('ascii')
 
 def extract_metadata(text : str):
-    name = extract_substring(text, '<NAME>', '</NAME>')
-    description = extract_substring(text, '<DESCRIPTION>', '</DESCRIPTION>')
+    metadata = extract_substring(text, '---', '---')
 
-    metadata = {}
+    print('Extracted metadata:', metadata)
 
-    if name is not None:
-        metadata['name'] = name
-    if description is not None:
-        metadata['description'] = description
+    metadata = yaml.safe_load(metadata)
+
+    name = metadata.get('name', 'Unnamed protocol')
+    description = metadata.get('description', 'No description provided')
+    multiround = metadata.get('multiround', False)
     
-    return metadata
+    return {
+        'name': name,
+        'description': description,
+        'multiround': multiround
+    }
 
 def encode_as_data_uri(text):
     # Avoid base64, since it's expensive
