@@ -1,9 +1,10 @@
 import ast
 import copy
+import functools
 import inspect
 import re
 import types
-from typing import Callable
+from typing import Callable, Dict, Optional, Tuple
 
 import langchain.tools.base
 
@@ -184,3 +185,63 @@ def schema_from_function(func: Callable, strict=False, known_types=DEFAULT_KNOWN
                 pass
 
     return parsed_schema
+
+def generate_docstring(description: str, params: Optional[Dict[str, Tuple[Optional[type], Optional[str]]]], returns: Optional[Tuple[Optional[type], Optional[str]]]) -> str:
+    docstring = description
+
+    if params:
+        docstring += '\n\nArgs:'
+        for param_name, (param_type, param_description) in params.items():
+            docstring += f'\n  {param_name}'
+
+            if param_type is not None:
+                docstring += f' ({param_type.__name__})'
+
+            if param_description:
+                docstring += f': {param_description}'
+
+    if returns:
+        return_type, return_description = returns
+        docstring += f'\n\nReturns:\n  '
+
+        if return_type:
+            docstring += f'{return_type.__name__}'
+        if return_description:
+            docstring += f': {return_description}'
+
+    return docstring
+
+def set_params_and_annotations(name: str, docstring: str, params: dict, return_type: type):
+    """
+    A decorator to add parameters and a return type annotation to a function.
+
+    Args:
+        name: The name of the function.
+        docstring: The function's new docstring.
+        params: A dictionary where the keys are parameter names and values are their types.
+        return_type: The return type to add to the function's signature.
+    """
+    def decorator(func: Callable):
+        # Create new parameters based on the provided params dict
+        new_params = [
+            inspect.Parameter(name, inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=type_)
+            for name, type_ in params.items()
+        ]
+
+        # Create a new signature with updated parameters and return annotation
+        new_sig = inspect.Signature(parameters=new_params, return_annotation=return_type)
+        
+        # Define the wrapper function
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        # Set the new signature on the wrapper
+        wrapper.__name__ = name
+        wrapper.__signature__ = new_sig
+        wrapper.__annotations__.update({ k: v[0] for k, v in params.items() })
+        wrapper.__annotations__['return'] = return_type
+        wrapper.__doc__ = docstring
+
+        return wrapper
+    return decorator
