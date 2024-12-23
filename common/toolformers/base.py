@@ -66,12 +66,20 @@ class Tool:
             )
         
     @staticmethod
-    def from_toollike(tool_like: 'ToolLike') -> 'Tool':
-        # TODO: Support overrides
+    def from_toollike(tool_like: 'ToolLike', name: Optional[str] = None, description: Optional[str] = None, args_schema: Optional[dict] = None, return_schema: Optional[dict] = None, inference_known_types: Optional[dict] = DEFAULT_KNOWN_TYPES, strict_inference: Optional[bool] = None) -> 'Tool':
         if isinstance(tool_like, Tool):
             return tool_like
         elif callable(tool_like):
-            return Tool.from_function(tool_like)
+            return Tool.from_function(
+                tool_like,
+                name=name,
+                description=description,
+                args_schema=args_schema,
+                return_schema=return_schema,
+                infer_schema=True,
+                inference_known_types=inference_known_types,
+                strict_inference=strict_inference
+            )
         else:
             raise ValueError("Tool-like object must be either a Tool or a callable")
 
