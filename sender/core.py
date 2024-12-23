@@ -239,13 +239,20 @@ class Sender:
 
         protocol = self.get_suitable_protocol(task_id, task_schema, target)
 
-        # TODO: Some standardized way to support data URIs
+        sources = []
+
+        if protocol is not None:
+            sources = protocol.sources
+
+            if len(sources) == 0:
+                # If there are no sources, use a data URI as source
+                sources = [encode_as_data_uri(protocol.protocol_document)]
+
         with self.transporter.new_conversation(
             target,
             protocol.metadata['multiround'] if protocol else True,
             protocol.hash if protocol else None,
-            # Temp
-            [encode_as_data_uri(protocol.protocol_document) if protocol else []]
+            sources
         ) as external_conversation:
             def send_query(query):
                 response = external_conversation(query)
