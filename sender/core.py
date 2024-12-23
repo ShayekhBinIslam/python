@@ -234,11 +234,20 @@ class Sender:
 
         return self.executor(protocol_id, implementation, [send_query_tool], [task_data], {})
 
-    # TODO: force_no_protocol, force_no_implementation, force_multiround
-    def execute_task(self, task_id : str, task_schema : TaskSchemaLike, task_data, target : str):
+    def execute_task(
+            self,
+            task_id : str,
+            task_schema : TaskSchemaLike,
+            task_data, target : str,
+            force_no_protocol : bool = False,
+            force_llm : bool = False,
+        ):
         self.memory.increment_task_conversations(task_id, target)
 
-        protocol = self.get_suitable_protocol(task_id, task_schema, target)
+        if force_no_protocol:
+            protocol = None
+        else:
+            protocol = self.get_suitable_protocol(task_id, task_schema, target)
 
         sources = []
 
@@ -262,7 +271,7 @@ class Sender:
 
             implementation = None
 
-            if protocol is not None:
+            if protocol is not None and not force_llm:
                 implementation = self.get_implementation(protocol.hash, task_schema)
 
             if implementation is None:
