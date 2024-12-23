@@ -149,13 +149,13 @@ class Sender:
         executor : Executor = None,
         querier : Querier = None,
         transporter : SenderTransporter = None,
+        storage_path : str = './sender_storage.json',
         protocol_threshold : int = 5,
         negotiation_threshold : int = 10,
         implementation_threshold : int = 5
     ):
         if storage is None:
-            path = './sender_storage.json'
-            storage = JSONStorage(path) # TODO
+            storage = JSONStorage(storage_path)
         if protocol_picker is None:
             protocol_picker = ProtocolPicker(toolformer)
         if negotiator is None:
@@ -180,7 +180,6 @@ class Sender:
 
             protocol = self.negotiator.negotiate_protocol_for_task(task_schema, send_query)
 
-        # TODO: Store the protocol document somewhere else
         if protocol is not None:
             self.memory.register_new_protocol(protocol.hash, protocol.protocol_document, protocol.sources, protocol.metadata)
 
