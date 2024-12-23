@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from common.core import Protocol
 from common.storage import Storage
+from common.errors import StorageError
 
 class ProtocolMemory:
     def __init__(self, storage : Storage, **kwargs):
@@ -25,7 +26,7 @@ class ProtocolMemory:
     
     def register_new_protocol(self, protocol_id : str, protocol_document : str, sources : List[str], metadata : dict, implementation : Optional[str] = None, **kwargs):
         if protocol_id in self.storage['protocols']:
-            raise Exception('Protocol already in memory:', protocol_id)
+            raise StorageError('Protocol already in memory:', protocol_id)
         
         protocol_info = {
             'document': protocol_document,
@@ -35,7 +36,6 @@ class ProtocolMemory:
         }
 
         protocol_info.update(kwargs)
-
 
         self.storage['protocols'][protocol_id] = protocol_info
         self.storage.save_memory()
@@ -57,7 +57,7 @@ class ProtocolMemory:
     
     def register_implementation(self, protocol_id, implementation):
         if protocol_id not in self.storage['protocols']:
-            raise Exception('Protocol not in memory:', protocol_id)
+            raise StorageError('Protocol not in memory:', protocol_id)
         self.storage['protocols'][protocol_id]['implementation'] = implementation
         self.storage.save_memory()
 
@@ -68,6 +68,6 @@ class ProtocolMemory:
     
     def set_extra_field(self, protocol_id, field, value):
         if protocol_id not in self.storage['protocols']:
-            raise Exception('Protocol not in memory:', protocol_id)
+            raise StorageError('Protocol not in memory:', protocol_id)
         self.storage['protocols'][protocol_id][field] = value
         self.storage.save_memory()

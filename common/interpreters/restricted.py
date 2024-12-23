@@ -3,6 +3,8 @@ import random
 from RestrictedPython import compile_restricted, safe_builtins, limited_builtins, utility_builtins
 from RestrictedPython.Guards import guarded_iter_unpack_sequence, guarded_unpack_sequence, full_write_guard
 
+from common.errors import ExecutionError
+
 def execute_restricted(code, extra_globals=None, supported_imports=None, function_name='run', input_args=None, input_kwargs=None):
     extra_globals = extra_globals or {}
     supported_imports = supported_imports or []
@@ -25,7 +27,7 @@ input_args, input_kwargs = {get_parameters_name}()
 
     def _safe_import(name, *args, **kwargs):
         if name not in _SAFE_MODULES:
-            raise Exception(f"Unsupported import {name!r}")
+            raise ExecutionError(f"Unsupported import {name!r}")
         return __import__(name, *args, **kwargs)
 
     result = None
@@ -33,7 +35,7 @@ input_args, input_kwargs = {get_parameters_name}()
         nonlocal result
 
         if result is not None:
-            raise Exception('Only one result can be registered')
+            raise ExecutionError('Only one result can be registered')
 
         result = x
 

@@ -3,6 +3,7 @@ import requests
 from typing import List
 
 from common.core import Conversation
+from common.errors import ProtocolTransportError
 
 class SenderTransporter(ABC):
     @abstractmethod
@@ -37,7 +38,7 @@ class SimpleSenderTransporter(SenderTransporter):
             raw_response = requests.post(target_url, json=raw_query)
 
             if raw_response.status_code != 200:
-                raise Exception('Error in external conversation:', raw_response.text)
+                raise ProtocolTransportError('Error in external conversation:', raw_response.text)
             
             response = raw_response.json()
 

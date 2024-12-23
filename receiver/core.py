@@ -2,6 +2,7 @@ from typing import List
 from common.core import Suitability
 
 from common.toolformers.base import ToolLike
+from common.errors import ProtocolRejectedError, ProtocolRetrievalError
 from common.memory import ProtocolMemory
 from common.storage import Storage, JSONStorage
 from common.executor import Executor, RestrictedExecutor
@@ -102,7 +103,7 @@ class Receiver:
                         break
 
                 if protocol_document is None:
-                    raise Exception('Failed to download protocol')
+                    raise ProtocolRetrievalError('Failed to download protocol')
                 
                 metadata = extract_metadata(protocol_document)
                 self.memory.register_new_protocol(protocol_hash, protocol_sources, protocol_document, metadata)
@@ -120,7 +121,7 @@ class Receiver:
             if self.memory.get_suitability(protocol_hash) == Suitability.ADEQUATE:
                 protocol_document = self.memory.get_protocol(protocol_hash).protocol_document
             else:
-                raise Exception('Unsuitable protocol')
+                raise ProtocolRejectedError
 
             implementation = self.get_implementation(protocol_hash)
 

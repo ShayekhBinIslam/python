@@ -5,6 +5,7 @@ import json
 from typing import Callable, Dict
 
 from common.core import TaskSchema, TaskSchemaLike
+from common.errors import ExecutionError, ProtocolRejectedError
 from common.toolformers.base import Toolformer, Tool
 
 PROTOCOL_QUERIER_PROMPT = 'You are NaturalLanguageQuerierGPT. You act as an intermediary between a machine (who has a very specific input and output schema) and an external service (which follows a very specific protocol).' \
@@ -51,7 +52,11 @@ def parse_and_handle_query(query, callback : Callable[[str], Dict]):
         if response['status'] == 'success':
             return response['body']
         else:
+            if response.get('message', '').lower() == 'protocol rejected':
+                raise ProtocolRejectedError()
             return 'Error calling the tool: ' + response['message']
+    except ProtocolRejectedError:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -145,7 +150,7 @@ class Querier:
             conversation(message, print_output=True)
 
             if found_error is not None:
-                raise Exception('Error:', found_error)
+                raise ExecutionError(found_error)
 
             if found_output is not None:
                 break

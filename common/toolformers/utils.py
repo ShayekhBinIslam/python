@@ -12,5 +12,5 @@ def default_toolformer(toolformer : Toolformer):
 
 def get_default_toolformer():
     if len(_default_toolformer_stack) == 0:
-        raise ValueError('No default toolformer set')
+        raise RuntimeError('No default toolformer set')
     return _default_toolformer_stack[-1]

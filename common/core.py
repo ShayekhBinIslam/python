@@ -3,6 +3,7 @@ from enum import Enum
 import json
 from typing import Dict, List, Optional, TypeAlias
 
+from common.errors import SchemaError
 from common.function_schema import schema_from_function
 from utils import compute_hash, extract_metadata
 
@@ -56,7 +57,7 @@ class TaskSchema:
     def from_json(json_dict : dict):
         for field in ['description', 'input', 'output']:
             if field not in json_dict:
-                raise ValueError(f'"{field}" field is required in TaskSchema')
+                raise SchemaError(f'"{field}" field is required in TaskSchema')
     
         return TaskSchema(json_dict['description'], json_dict['input'], json_dict['output'])
     
@@ -91,7 +92,7 @@ class TaskSchema:
         elif isinstance(task_schema_like, dict):
             return TaskSchema.from_json(task_schema_like)
         else:
-            raise ValueError('TaskSchemaLike must be either a TaskSchema or a dict')
+            raise SchemaError('TaskSchemaLike must be either a TaskSchema or a dict')
 
     def __str__(self):
         return json.dumps(self.to_json(), indent=2)

@@ -2,6 +2,7 @@ import inspect
 from typing import Optional
 
 from common.core import Protocol
+from common.errors import ExecutionError, StorageError
 from common.storage import Storage, JSONStorage
 from sender.components.negotiator import SenderNegotiator
 from sender.components.programmer import SenderProgrammer
@@ -101,7 +102,7 @@ class SenderMemory(ProtocolMemory):
 
     def register_new_protocol(self, protocol_id : str, protocol_document : str, sources : list, metadata : dict):
         if protocol_id in self.storage['protocols']:
-            raise Exception('Protocol already in memory:', protocol_id)
+            raise StorageError('Protocol already in memory:', protocol_id)
         
         super().register_new_protocol(
             protocol_id,
