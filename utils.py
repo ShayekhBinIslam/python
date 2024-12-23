@@ -14,17 +14,6 @@ def extract_substring(text : str, start_tag : str, end_tag : str):
 
     return text[start_position + len(start_tag):end_position].strip()
 
-def send_raw_query(text, protocol_id, target_node, source, timeout=10000):
-    from receiver.core_old import Receiver
-    from receiver.storage import LocalReceiverStorage
-    from toolformers.camel import CamelToolformer
-    from camel.types import ModelPlatformType, ModelType
-    from receiver.components.responder import Responder
-    memory = LocalReceiverStorage()
-    toolformer = CamelToolformer(ModelPlatformType.OPENAI, ModelType.GPT_4O, {})
-
-    return Receiver(memory, Responder(toolformer, memory, [], ''), []).handle_query(protocol_id, [source], text)
-
 def compute_hash(s):
     # Hash a string using SHA-1 and return the base64 encoded result
 
@@ -37,8 +26,6 @@ def compute_hash(s):
 
 def extract_metadata(text : str):
     metadata = extract_substring(text, '---', '---')
-
-    print('Extracted metadata:', metadata)
 
     metadata = yaml.safe_load(metadata)
 
