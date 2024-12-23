@@ -268,7 +268,13 @@ class Sender:
             if implementation is None:
                 response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
             else:
-                response = self.run_routine(protocol.hash, implementation, task_data, send_query)
+                try:
+                    response = self.run_routine(protocol.hash, implementation, task_data, send_query)
+                except ExecutionError as e:
+                    print('Error running routine:', e)
+                    print('Fallback to querier')
+
+                    response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
 
             return response
 
