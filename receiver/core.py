@@ -1,5 +1,5 @@
 from typing import List
-from common.core import Suitability, Protocol
+from common.core import Suitability
 
 from common.toolformers.base import ToolLike
 from common.memory import ProtocolMemory
@@ -22,7 +22,14 @@ class ReceiverMemory(ProtocolMemory):
             metadata,
             None,
             suitability=Suitability.UNKNOWN,
+            conversations=0
         )
+    
+    def get_protocol_conversations(self, protocol_id):
+        return self.get_extra_field(protocol_id, 'conversations', 0)
+    
+    def increment_protocol_conversations(self, protocol_id):
+        self.set_extra_field(protocol_id, 'conversations', self.get_protocol_conversations(protocol_id) + 1)
 
     def set_suitability(self, protocol_id : str, suitability : Suitability):
         super().set_extra_field(protocol_id, 'suitability', suitability)
@@ -31,7 +38,7 @@ class ReceiverMemory(ProtocolMemory):
         return self.get_extra_field(protocol_id, 'suitability', Suitability.UNKNOWN)
 
 class Receiver:
-    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, executor: Executor, tools: List[ToolLike], additional_info : str = ''):
+    def __init__(self, storage : Storage, responder : Responder, protocol_checker : ReceiverProtocolChecker, negotiator : ReceiverNegotiator, programmer : ReceiverProgrammer, executor: Executor, tools: List[ToolLike], additional_info : str = '', implementation_threshold : int = 5):
         self.memory = ReceiverMemory(storage)
         self.responder = responder
         self.protocol_checker = protocol_checker
@@ -40,15 +47,15 @@ class Receiver:
         self.executor = executor
         self.tools = tools
         self.additional_info = additional_info
+        self.implementation_threshold = implementation_threshold
 
     @staticmethod
-    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, executor : Executor = None, tools : List[ToolLike] = None, additional_info : str = ''):
+    def make_default(toolformer, storage : Storage = None, responder : Responder = None, protocol_checker : ReceiverProtocolChecker = None, negotiator: ReceiverNegotiator = None, programmer : ReceiverProgrammer = None, executor : Executor = None, tools : List[ToolLike] = None, additional_info : str = '', storage_path : str = './receiver_storage.json', implementation_threshold : int = 5):
         if tools is None:
             tools = []
 
         if storage is None:
-            path = './receiver_storage.json'
-            storage = JSONStorage(path) # TODO
+            storage = JSONStorage(storage_path)
 
         if responder is None:
             responder = Responder(toolformer)
@@ -65,13 +72,13 @@ class Receiver:
         if executor is None:
             executor = RestrictedExecutor()
 
-        return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info)
+        return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info, implementation_threshold)
     
     def get_implementation(self, protocol_id : str):
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
-        if implementation is None: # TODO: Decide when to implement # and self.memory.get_task_conversations(protocol_id, None) > -1:
+        if implementation is None and self.memory.get_protocol_conversations(protocol_id) >= self.implementation_threshold:
             protocol = self.memory.get_protocol(protocol_id)
             implementation = self.programmer(self.tools, protocol.protocol_document, protocol.metadata.get('multiround', False))
             self.memory.register_implementation(protocol_id, implementation)
@@ -86,6 +93,8 @@ class Receiver:
         implementation = None
 
         if protocol_hash is not None:
+            self.memory.increment_protocol_conversations(protocol_hash)
+
             if not self.memory.is_known(protocol_hash):
                 for protocol_source in protocol_sources:
                     protocol_document = download_and_verify_protocol(protocol_hash, protocol_source)
