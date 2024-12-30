@@ -298,22 +298,18 @@ class SanitizedInterpreter(BaseInterpreter):
                 # Get the names of the arguments
                 arg_names = [arg.arg for arg in signature.args]
                 # Get the default values of the arguments
-                print(arg_names)
                 
                 for arg, value in zip(arg_names, args):
                     self.state[arg] = value
 
                 for arg, value in kwargs.items():
                     self.state[arg] = value
-
-                print('Expression body:', expression.body)
                 
                 for action in expression.body:
                     if isinstance(action, ast.Return):
                         return self._execute_ast(action.value)
                     else:
                         self._execute_ast(action)
-                print('Result:', result)
                 return result
             
             self.state[expression.name] = func

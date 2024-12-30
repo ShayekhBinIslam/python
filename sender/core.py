@@ -320,7 +320,7 @@ class Sender:
         with self.transporter.new_conversation(target, True, 'negotiation', None) as external_conversation:
             def send_query(query):
                 response = external_conversation(query)
-                print('Response to negotiator:', response)
+                # print('Response to negotiator:', response)
                 return response
 
             protocol = self.negotiator.negotiate_protocol_for_task(task_schema, send_query)
@@ -400,7 +400,7 @@ class Sender:
             """
 
             response = callback(query)
-            print('Tool run_routine responded with:', response)
+            # print('Tool run_routine responded with:', response)
             return response['body']
 
         send_query_tool = Tool.from_function(send_to_server) # TODO: Handle errors
@@ -452,7 +452,7 @@ class Sender:
         ) as external_conversation:
             def send_query(query):
                 response = external_conversation(query)
-                print('Response to sender:', response)
+                # print('Response to sender:', response)
                 return response
 
             implementation = None
@@ -466,8 +466,8 @@ class Sender:
                 try:
                     response = self.run_routine(protocol.hash, implementation, task_data, send_query)
                 except ExecutionError as e:
-                    print('Error running routine:', e)
-                    print('Fallback to querier')
+                    # print('Error running routine:', e)
+                    # print('Fallback to querier')
 
                     response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
 

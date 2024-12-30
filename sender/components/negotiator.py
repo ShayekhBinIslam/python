@@ -75,15 +75,15 @@ class SenderNegotiator:
         other_message = 'Hello! How may I help you?'
 
         for i in range(self.max_rounds):
-            print('===NegotiatorGPT===')
+            # print('===NegotiatorGPT===')
             message = conversation(other_message, print_output=True)
 
-            print('Checking if we can extract from:', message)
-            print('---------')
+            # print('Checking if we can extract from:', message)
+            # print('---------')
             protocol = extract_substring(message, '<FINALPROTOCOL>', '</FINALPROTOCOL>')
 
             if protocol is None:
-                print('Could not extract')
+                # print('Could not extract')
                 response = callback(message)
 
                 if response['status'] == 'success':
@@ -91,10 +91,10 @@ class SenderNegotiator:
                 else:
                     other_message = 'Error interacting with the other party: ' + response['message']
 
-                print()
-                print('===Other GPT===')
-                print(other_message)
-                print()
+                # print()
+                # print('===Other GPT===')
+                # print(other_message)
+                # print()
             else:
                 metadata = extract_metadata(protocol)
                 

@@ -47,8 +47,8 @@ class ReceiverProtocolChecker:
 
         reply = conversation(message, print_output=True)
 
-        print('Reply:', reply)
-        print(reply.lower().strip()[-10:])
-        print('Parsed decision:', 'yes' in reply.lower().strip()[-10:])
+        # print('Reply:', reply)
+        # print(reply.lower().strip()[-10:])
+        # print('Parsed decision:', 'yes' in reply.lower().strip()[-10:])
 
         return 'yes' in reply.lower().strip()[-10:]

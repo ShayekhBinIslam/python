@@ -35,7 +35,7 @@ class Responder:
         Returns:
             Conversation: The newly created conversation following the protocol.
         """
-        print('===NL RESPONDER (WITH PROTOCOL)===')
+        # print('===NL RESPONDER (WITH PROTOCOL)===')
 
         prompt = PROTOCOL_RESPONDER_PROMPT
 
@@ -57,9 +57,8 @@ class Responder:
         Returns:
             Conversation: The created NL conversation.
         """
-        print('===NL RESPONDER (NO PROTOCOL)===')
-
-        print('Preparing NL response with tools:', [tool.name for tool in tools])
+        # print('===NL RESPONDER (NO PROTOCOL)===')
+        # print('Preparing NL response with tools:', [tool.name for tool in tools])
 
         prompt = NL_RESPONDER_PROMPT
 

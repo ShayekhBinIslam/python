@@ -125,7 +125,7 @@ class Querier:
         query_counter = 0
 
         def send_query_internal(query):
-            print('Sending query:', query)
+            # print('Sending query:', query)
             nonlocal query_counter
             query_counter += 1
 
@@ -153,7 +153,7 @@ class Querier:
         found_error = None
 
         def register_output(**kwargs) -> str:
-            print('Registering output:', kwargs)
+            # print('Registering output:', kwargs)
 
             nonlocal found_output
 
