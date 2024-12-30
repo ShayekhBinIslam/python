@@ -8,10 +8,27 @@ CHECKER_TOOL_PROMPT = 'You are ProtocolCheckerGPT. Your task is to look at the p
     'protocol is adequate or "NO". Do not attempt to implement the protocol or call the tools: that will be done by the implementer.'
 
 class ReceiverProtocolChecker:
+    """Checks protocol validity and suitability for the Receiver."""
+
     def __init__(self, toolformer : Toolformer):
+        """Initialize the ReceiverProtocolChecker with a Toolformer.
+
+        Args:
+            toolformer (Toolformer): The Toolformer instance managing tools.
+        """
         self.toolformer = toolformer
     
-    def __call__(self, protocol_document : str, tools : List[ToolLike], additional_info : str = ''):
+    def __call__(self, protocol_document : str, tools : List[ToolLike], additional_info : str = '') -> bool:
+        """Determine if the protocol is suitable based on available tools.
+
+        Args:
+            protocol_document (str): The protocol document to evaluate.
+            tools (List[ToolLike]): A list of tools available to implement the protocol.
+            additional_info (str, optional): Additional information for evaluation. Defaults to ''.
+
+        Returns:
+            bool: True if the protocol is suitable, False otherwise.
+        """
         message = 'Protocol document:\n\n' + protocol_document + '\n\n' + 'Functions that the implementer will have access to:\n\n'
 
         if len(tools) == 0:

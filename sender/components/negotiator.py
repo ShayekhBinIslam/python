@@ -1,3 +1,5 @@
+from typing import Callable
+
 from common.core import Protocol, TaskSchema, TaskSchemaLike
 from common.toolformers.base import Toolformer
 from utils import extract_metadata, extract_substring
@@ -37,11 +39,29 @@ Body of the protocol...
 '''
 
 class SenderNegotiator:
-    def __init__(self, toolformer : Toolformer, max_rounds : int = 10):
+    """Manages the negotiation of protocols for sending tasks."""
+
+    def __init__(self, toolformer: Toolformer, max_rounds: int = 10) -> None:
+        """Initializes the SenderNegotiator.
+
+        Args:
+            toolformer (Toolformer): The Toolformer instance.
+            max_rounds (int): Maximum number of negotiation rounds.
+        """
         self.toolformer = toolformer
         self.max_rounds = max_rounds
 
-    def negotiate_protocol_for_task(self, task_schema : TaskSchemaLike, callback, additional_info : str = ''):
+    def negotiate_protocol_for_task(self, task_schema: TaskSchemaLike, callback: Callable[[str], str], additional_info: str = '') -> Protocol:
+        """Negotiates and finalizes a protocol based on the task schema.
+
+        Args:
+            task_schema (TaskSchemaLike): The schema of the task.
+            callback (Callable[[str], str]): A callback to handle messages from the other party.
+            additional_info (str): Additional information for the negotiation.
+
+        Returns:
+            Protocol: The finalized Protocol object.
+        """
         task_schema = TaskSchema.from_taskschemalike(task_schema)
         found_protocol = None
 

@@ -49,11 +49,30 @@ Then, write your implementation by writing a code block that contains the tags <
 '''
 
 class ReceiverProgrammer:
-    def __init__(self, toolformer : Toolformer, num_attempts : int = 5):
+    """Generates implementations for protocols based on their specifications."""
+
+    def __init__(self, toolformer: Toolformer, num_attempts: int = 5):
+        """Initialize the ReceiverProgrammer with a Toolformer and retry attempts.
+
+        Args:
+            toolformer (Toolformer): The Toolformer instance managing tools.
+            num_attempts (int, optional): Number of attempts to generate implementation. Defaults to 5.
+        """
         self.toolformer = toolformer
         self.num_attempts = num_attempts
 
-    def __call__(self, tools : List[ToolLike], protocol_document : str, multiround : bool, additional_info : str = ''):
+    def __call__(self, tools: List[ToolLike], protocol_document: str, multiround: bool, additional_info: str = '') -> str:
+        """Generate the implementation code for a given protocol.
+
+        Args:
+            tools (List[ToolLike]): A list of tools available for implementation.
+            protocol_document (str): The protocol document outlining requirements.
+            multiround (bool): Indicates if the protocol supports multiple rounds of interaction.
+            additional_info (str, optional): Additional information for implementation. Defaults to ''.
+
+        Returns:
+            str: The generated implementation code.
+        """
         message = 'Protocol document:\n\n' + protocol_document + '\n\n' + 'Additional functions:\n\n'
 
         if len(tools) == 0:

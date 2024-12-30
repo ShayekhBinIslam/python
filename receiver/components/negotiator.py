@@ -29,10 +29,26 @@ When you are okay with the protocol, don't further repeat everything, just tell 
 '''
 
 class ReceiverNegotiator:
-    def __init__(self, toolformer : Toolformer):
+    """Manages protocol negotiations for the Receiver."""
+
+    def __init__(self, toolformer: Toolformer):
+        """Initialize the ReceiverNegotiator with a Toolformer.
+
+        Args:
+            toolformer (Toolformer): The Toolformer instance managing tools.
+        """
         self.toolformer = toolformer
 
-    def create_conversation(self, tools : List[ToolLike], additional_info : str = ''):
+    def create_conversation(self, tools: List[ToolLike], additional_info: str = '') -> Conversation:
+        """Create a new negotiation conversation based on available tools.
+
+        Args:
+            tools (List[ToolLike]): A list of tools available for negotiation.
+            additional_info (str, optional): Additional information for the negotiation. Defaults to ''.
+
+        Returns:
+            Conversation: A Conversation instance managing the negotiation.
+        """
         prompt = TOOLS_NEGOTIATOR_PROMPT
 
         if additional_info:

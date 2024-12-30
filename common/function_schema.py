@@ -26,8 +26,15 @@ PYTHON_TYPE_TO_JSON_SCHEMA_TYPE = {
     dict: 'object'
 }
 
-def copy_func(func):
-    """Create a deepcopy of a function."""
+def copy_func(func: Callable) -> Callable:
+    """Create a deep copy of a function.
+
+    Args:
+        func (Callable): The function to be copied.
+
+    Returns:
+        Callable: A new function that is a deep copy of the original.
+    """
     return types.FunctionType(
         func.__code__,  # Code object
         copy.copy(func.__globals__),  # Global variables
@@ -36,7 +43,16 @@ def copy_func(func):
         closure=copy.copy(func.__closure__)  # Closure variables
     )
 
-def add_annotations_from_docstring(func, known_types=DEFAULT_KNOWN_TYPES):
+def add_annotations_from_docstring(func: Callable, known_types: dict = DEFAULT_KNOWN_TYPES) -> Callable:
+    """Add annotations derived from Google-style docstrings to the given function.
+
+    Args:
+        func (Callable): The function to be processed.
+        known_types (dict, optional): A dictionary mapping type names to Python types.
+
+    Returns:
+        Callable: The function with updated annotations.
+    """
     known_types = known_types.copy()
 
     # Get the source code of the function
@@ -143,7 +159,17 @@ def add_annotations_from_docstring(func, known_types=DEFAULT_KNOWN_TYPES):
     
 
 
-def schema_from_function(func: Callable, strict=False, known_types=DEFAULT_KNOWN_TYPES):
+def schema_from_function(func: Callable, strict: bool = False, known_types: dict = DEFAULT_KNOWN_TYPES) -> dict:
+    """Create a JSON schema from a function's signature and docstring.
+
+    Args:
+        func (Callable): The function to generate the schema from.
+        strict (bool, optional): Enforce strict parsing and annotation requirements.
+        known_types (dict, optional): A dictionary mapping type names to Python types.
+
+    Returns:
+        dict: A JSON schema representing the function's parameters and return.
+    """
     known_types = known_types.copy()
     func_name = func.__name__
 
@@ -187,6 +213,17 @@ def schema_from_function(func: Callable, strict=False, known_types=DEFAULT_KNOWN
     return parsed_schema
 
 def generate_docstring(description: str, params: Optional[Dict[str, Tuple[Optional[type], Optional[str]]]], returns: Optional[Tuple[Optional[type], Optional[str]]]) -> str:
+    """
+    Generate a docstring from a description, parameters, and return type.
+
+    Args:
+        description (str): The description of the function.
+        params (Optional[Dict[str, Tuple[Optional[type], Optional[str]]]): A mapping of parameter names to type/description tuples.
+        returns (Optional[Tuple[Optional[type], Optional[str]]]): The return type and description.
+    
+    Returns:
+        str: The generated docstring.
+    """
     docstring = description
 
     if params:
@@ -211,15 +248,17 @@ def generate_docstring(description: str, params: Optional[Dict[str, Tuple[Option
 
     return docstring
 
-def set_params_and_annotations(name: str, docstring: str, params: dict, return_type: type):
-    """
-    A decorator to add parameters and a return type annotation to a function.
+def set_params_and_annotations(name: str, docstring: str, params: Dict[str, Tuple[Optional[type], Optional[str]]], return_type: Optional[type]) -> Callable:
+    """Decorator to set parameters and annotations on a function based on the given schema data.
 
     Args:
-        name: The name of the function.
-        docstring: The function's new docstring.
-        params: A dictionary where the keys are parameter names and values are their types.
-        return_type: The return type to add to the function's signature.
+        name (str): The name of the function.
+        docstring (str): The function's docstring.
+        params (dict): A mapping of parameter names to type/description tuples.
+        return_type (Optional[type]): The function's return type.
+
+    Returns:
+        Callable: The wrapped function with updated signature and docstring.
     """
     def decorator(func: Callable):
         # Create new parameters based on the provided params dict

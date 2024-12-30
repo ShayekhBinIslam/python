@@ -1,11 +1,35 @@
 import random
+from typing import Any, Optional, List
 
 from RestrictedPython import compile_restricted, safe_builtins, limited_builtins, utility_builtins
 from RestrictedPython.Guards import guarded_iter_unpack_sequence, guarded_unpack_sequence, full_write_guard
 
 from common.errors import ExecutionError
 
-def execute_restricted(code, extra_globals=None, supported_imports=None, function_name='run', input_args=None, input_kwargs=None):
+def execute_restricted(
+    code: str,
+    extra_globals: Optional[dict] = None,
+    supported_imports: Optional[List[str]] = None,
+    function_name: str = 'run',
+    input_args: Optional[List[Any]] = None,
+    input_kwargs: Optional[dict] = None
+) -> Any:
+    """Executes restricted code with limited globals and supported imports.
+
+    Args:
+        code (str): The code to execute.
+        extra_globals (Optional[dict]): Additional global variables.
+        supported_imports (Optional[List[str]]): List of allowed modules.
+        function_name (str): The name of the function to execute.
+        input_args (Optional[List[Any]]): Positional arguments for the function.
+        input_kwargs (Optional[dict]): Keyword arguments for the function.
+
+    Returns:
+        Any: The result of the executed function.
+
+    Raises:
+        ExecutionError: If an unsupported import is attempted or multiple results are registered.
+    """
     extra_globals = extra_globals or {}
     supported_imports = supported_imports or []
     input_args = input_args or []

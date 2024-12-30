@@ -6,7 +6,18 @@ from threading import Timer
 
 
 class ReceiverServer:
-    def __init__(self, receiver : Receiver):
+    """Handles and manages HTTP conversations via Flask with a given Receiver.
+
+    This class sets up Flask routes for handling conversation requests
+    using the provided Receiver instance.
+    """
+
+    def __init__(self, receiver: 'Receiver') -> None:
+        """Initializes the server with a Receiver instance.
+
+        Args:
+            receiver (Receiver): The receiver that creates new conversations.
+        """
         self.receiver = receiver
         self.app = Flask(__name__)
         self.conversation_storage = {}
@@ -50,6 +61,7 @@ class ReceiverServer:
         @self.app.route('/conversations/<conversation_id>', methods=['POST', 'DELETE'])
         def continue_conversation(conversation_id):
             if request.method == 'DELETE':
+                # The deletion will succeed even if the conversation does not exist
                 self.conversation_storage.pop(conversation_id, None)
                 return jsonify({
                     'status': 'success'
@@ -72,5 +84,11 @@ class ReceiverServer:
 
             return jsonify(response)
 
-    def run(self, *args, **kwargs):
+    def run(self, *args, **kwargs) -> None:
+        """Runs the Flask application.
+
+        Args:
+            *args: Positional arguments for Flask's run method.
+            **kwargs: Keyword arguments for Flask's run method.
+        """
         self.app.run(*args, **kwargs)

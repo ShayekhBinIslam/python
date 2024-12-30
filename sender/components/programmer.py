@@ -1,7 +1,3 @@
-# The programmer creates implementations depending on a protocol specification
-
-import json
-
 from common.core import TaskSchema, TaskSchemaLike
 from common.toolformers.base import Toolformer
 from utils import extract_substring
@@ -38,13 +34,29 @@ def send_query(task_data):
 </IMPLEMENTATION>
 '''
 
-# TODO: Prompts should be key-valued and overridable
 class SenderProgrammer:
-    def __init__(self, toolformer : Toolformer, num_attempts : int = 5):
+    """Generates implementations based on task schemas and protocol documents."""
+
+    def __init__(self, toolformer: Toolformer, num_attempts: int = 5):
+        """Initializes the SenderProgrammer.
+
+        Args:
+            toolformer (Toolformer): The Toolformer instance.
+            num_attempts (int): Number of attempts to generate implementations.
+        """
         self.toolformer = toolformer
         self.num_attempts = num_attempts
 
-    def __call__(self, task_schema : TaskSchemaLike, protocol_document : str):
+    def __call__(self, task_schema: TaskSchemaLike, protocol_document: str) -> str:
+        """Generates implementation code for a given schema and protocol.
+
+        Args:
+            task_schema (TaskSchemaLike): The schema of the task.
+            protocol_document (str): The protocol specifications.
+
+        Returns:
+            str: The generated implementation code.
+        """
         task_schema = TaskSchema.from_taskschemalike(task_schema)
         conversation = self.toolformer.new_conversation(TASK_PROGRAMMER_PROMPT, [], category='programming')
         message = 'JSON schema:\n\n' + str(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document

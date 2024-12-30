@@ -2,7 +2,7 @@
 # It receives the protocol document and writes the query that must be performed to the system.
 
 import json
-from typing import Callable, Dict
+from typing import Any, Callable, Dict
 
 from common.core import TaskSchema, TaskSchemaLike
 from common.errors import ExecutionError, ProtocolRejectedError
@@ -18,7 +18,17 @@ PROTOCOL_QUERIER_PROMPT = 'You are NaturalLanguageQuerierGPT. You act as an inte
     'You cannot call deliverStructuredOutput multiple times, so make sure to deliver the right output the first time.' \
     'If there is an error and the machine\'s input/output schema specifies how to handle an error, return the error in that format. Otherwise, call the "error" tool.' \
 
-def construct_query_description(protocol_document : str, task_schema : TaskSchemaLike, task_data):
+def construct_query_description(protocol_document: str, task_schema: TaskSchemaLike, task_data: Any) -> str:
+    """Constructs a query description for the protocol and task.
+
+    Args:
+        protocol_document (str): The protocol document text.
+        task_schema (TaskSchemaLike): The schema for the task.
+        task_data (Any): The data for the task.
+
+    Returns:
+        str: The constructed query description.
+    """
     query_description = ''
     if protocol_document is not None:
         query_description += 'Protocol document:\n\n'
@@ -45,7 +55,16 @@ NL_QUERIER_PROMPT = 'You are NaturalLanguageQuerierGPT. You act as an intermedia
     'If there is an error and the machine\'s input/output schema specifies how to handle it, return the error in that format. Otherwise, call the "register_error" tool.'
     #'If the query fails, do not attempt to send another query.'
 
-def parse_and_handle_query(query, callback : Callable[[str], Dict]):
+def parse_and_handle_query(query: str, callback: Callable[[str], Dict]) -> str:
+    """Parses and processes a query by calling the given callback.
+
+    Args:
+        query (str): The query to be processed.
+        callback (Callable[[str], Dict]): The function that processes the query.
+
+    Returns:
+        str: The response from the callback or error information.
+    """
     try:
         response = callback(query)
 
@@ -63,7 +82,18 @@ def parse_and_handle_query(query, callback : Callable[[str], Dict]):
         return 'Error calling the tool: ' + str(e)
 
 class Querier:
-    def __init__(self, toolformer : Toolformer, max_queries : int = 5, max_messages : int = None, force_query : bool = True):
+    """Handles querying external services based on protocol documents and task schemas."""
+
+    def __init__(self, toolformer: Toolformer, max_queries: int = 5, max_messages: int = None, force_query: bool = True):
+        """
+        Initializes the Querier with the given toolformer and query/message limits.
+
+        Args:
+            toolformer (Toolformer): The Toolformer instance managing tools and conversations.
+            max_queries (int, optional): Maximum number of queries allowed. Defaults to 5.
+            max_messages (int, optional): Maximum number of messages allowed. If None, set to max_queries * 2. Defaults to None.
+            force_query (bool, optional): Whether to enforce sending a query before output. Defaults to True.
+        """
         self.toolformer = toolformer
         self.max_queries = max_queries
 
@@ -73,7 +103,25 @@ class Querier:
         self.max_messages = max_messages
         self.force_query = force_query
 
-    def handle_conversation(self, prompt : str, message : str, output_schema : dict, callback):
+    def handle_conversation(
+        self,
+        prompt: str,
+        message: str,
+        output_schema: dict,
+        callback: Callable[[str], Dict]
+    ) -> str:
+        """
+        Manages the conversation flow for handling queries and delivering outputs.
+
+        Args:
+            prompt (str): The initial prompt for the conversation.
+            message (str): The message to process in the conversation.
+            output_schema (dict): The schema defining the structure of the expected output.
+            callback (Callable[[str], Dict]): A callback function to handle query responses.
+
+        Returns:
+            str: The structured output produced by the conversation.
+        """
         query_counter = 0
 
         def send_query_internal(query):
@@ -163,7 +211,25 @@ class Querier:
 
         return found_output
     
-    def __call__(self, task_schema : TaskSchemaLike, task_data, protocol_document : str, callback):
+    def __call__(
+        self,
+        task_schema: TaskSchemaLike,
+        task_data: Any,
+        protocol_document: str,
+        callback: Callable[[str], Dict]
+    ) -> str:
+        """
+        Executes the querying process based on task schema and protocol document.
+
+        Args:
+            task_schema (TaskSchemaLike): The schema of the task to be performed.
+            task_data (Any): The data associated with the task.
+            protocol_document (str): The document defining the protocol for querying.
+            callback: A callback function to handle query responses.
+
+        Returns:
+            str: The structured output resulting from the querying process.
+        """
         query_description = construct_query_description(protocol_document, task_schema, task_data)
         output_schema = task_schema['output'] # TODO: Should I just use tuples? Do pydantic & co. work with complex dicts?
 
