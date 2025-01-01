@@ -1,5 +1,6 @@
 from typing import List
 
+from common.core import Conversation
 from common.toolformers.base import Tool, ToolLike
 from common.toolformers.base import Toolformer
 

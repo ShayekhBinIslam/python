@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 import json
-from typing import Callable, Dict, List, Optional, TypeAlias, Any
+from types import TracebackType
+from typing import Any, Callable, Dict, List, Optional, TypeAlias
 
 from common.errors import SchemaError
 from common.function_schema import schema_from_function
@@ -58,7 +59,7 @@ class Conversation(ABC):
         self,
         exc_type: Optional[type],
         exc_value: Optional[BaseException],
-        traceback: Optional["TracebackType"]
+        traceback: Optional[TracebackType]
     ) -> None:
         """
         Exits the conversation context, ensuring closure.
