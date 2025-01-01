@@ -5,7 +5,7 @@ from langchain_core.language_models import BaseChatModel
 from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import create_react_agent
 
-from toolformers.base import Conversation, Tool, Toolformer, ToolLike
+from agora.common.toolformers.base import Conversation, Tool, Toolformer, ToolLike
 from langchain_core.tools import tool as function_to_tool
 
 

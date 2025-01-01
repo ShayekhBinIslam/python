@@ -477,10 +477,10 @@ class Sender:
         """Decorator to define a task with optional schemas and description.
 
         Args:
-            task_id (Optional[str], optional): The identifier of the task. Defaults to None.
-            description (Optional[str], optional): A brief description of the task. Defaults to None.
-            input_schema (Optional[dict], optional): The input schema for the task. Defaults to None.
-            output_schema (Optional[dict], optional): The output schema for the task. Defaults to None.
+            task_id (str, optional): The identifier of the task. Defaults to None.
+            description (str, optional): A brief description of the task. Defaults to None.
+            input_schema (dict, optional): The input schema for the task. Defaults to None.
+            output_schema (dict, optional): The output schema for the task. Defaults to None.
 
         Returns:
             Callable: The decorated function.
