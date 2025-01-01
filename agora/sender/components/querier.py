@@ -72,13 +72,13 @@ def parse_and_handle_query(query: str, callback: Callable[[str], Dict]) -> str:
             return response['body']
         else:
             if response.get('message', '').lower() == 'protocol rejected':
-                raise ProtocolRejectedError()
+                raise ProtocolRejectedError('Protocol was rejected by the service')
             return 'Error calling the tool: ' + response['message']
     except ProtocolRejectedError:
         raise
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        # import traceback
+        # traceback.print_exc()
         return 'Error calling the tool: ' + str(e)
 
 class Querier:

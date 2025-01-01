@@ -72,7 +72,7 @@ class ProtocolMemory:
             StorageError: If the protocol is already registered.
         """
         if protocol_id in self.storage['protocols']:
-            raise StorageError('Protocol already in memory:', protocol_id)
+            raise StorageError(f'Protocol {protocol_id} already in memory')
         
         protocol_info = {
             'document': protocol_document,
@@ -131,7 +131,7 @@ class ProtocolMemory:
             StorageError: If the protocol is not registered.
         """
         if protocol_id not in self.storage['protocols']:
-            raise StorageError('Protocol not in memory:', protocol_id)
+            raise StorageError(f'Protocol {protocol_id} not in memory')
         self.storage['protocols'][protocol_id]['implementation'] = implementation
         self.storage.save_memory()
 
@@ -164,6 +164,6 @@ class ProtocolMemory:
             StorageError: If the protocol is not registered.
         """
         if protocol_id not in self.storage['protocols']:
-            raise StorageError('Protocol not in memory:', protocol_id)
+            raise StorageError(f'Protocol {protocol_id} not in memory')
         self.storage['protocols'][protocol_id][field] = value
         self.storage.save_memory()

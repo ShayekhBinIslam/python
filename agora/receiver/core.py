@@ -211,8 +211,8 @@ class Receiver:
             Conversation: A new conversation or negotiation session.
 
         Raises:
-            ProtocolRetrievalError: If unable to download protocol.
-            ProtocolRejectedError: If protocol is deemed inadequate.
+            ProtocolRetrievalError: If unable to download the protocol.
+            ProtocolRejectedError: If the protocol is deemed inadequate.
         """
         if protocol_hash == 'negotiation':
             return self.negotiator.create_conversation(self.tools, self.additional_info)
@@ -248,7 +248,7 @@ class Receiver:
             if self.memory.get_suitability(protocol_hash) == Suitability.ADEQUATE:
                 protocol_document = self.memory.get_protocol(protocol_hash).protocol_document
             else:
-                raise ProtocolRejectedError
+                raise ProtocolRejectedError(f'{protocol_hash} is not suitable for execution')
 
             implementation = self.get_implementation(protocol_hash)
 

@@ -12,7 +12,7 @@ class ProtocolError(Exception):
 
 
 class ExecutionError(Exception):
-    """Exception raised for errors during execution of routines."""
+    """Exception raised for errors during the internal execution of routines and toolformers."""
 
     def __init__(self, message: str = ''):
         """
