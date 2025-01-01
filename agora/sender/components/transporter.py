@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 import requests
 from typing import List
 
-from common.core import Conversation
-from common.errors import ProtocolTransportError
+from agora.common.core import Conversation
+from agora.common.errors import ProtocolTransportError
 
 class SenderTransporter(ABC):
     @abstractmethod

@@ -1,7 +1,7 @@
 import uuid
 from flask import Flask, request, jsonify
 
-from receiver.core import Receiver
+from agora.receiver.core import Receiver
 from threading import Timer
 
 

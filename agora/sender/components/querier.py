@@ -4,9 +4,9 @@
 import json
 from typing import Any, Callable, Dict
 
-from common.core import TaskSchema, TaskSchemaLike
-from common.errors import ExecutionError, ProtocolRejectedError
-from common.toolformers.base import Toolformer, Tool
+from agora.common.core import TaskSchema, TaskSchemaLike
+from agora.common.errors import ExecutionError, ProtocolRejectedError
+from agora.common.toolformers.base import Toolformer, Tool
 
 PROTOCOL_QUERIER_PROMPT = 'You are NaturalLanguageQuerierGPT. You act as an intermediary between a machine (who has a very specific input and output schema) and an external service (which follows a very specific protocol).' \
     'You will receive a task description (including a schema of the input and output that the machine uses) and the corresponding data. Call the \"send_query\" tool with a message following the protocol.' \

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from common.toolformers.base import Conversation, Toolformer, Tool, ToolLike
+from agora.common.toolformers.base import Conversation, Toolformer, Tool, ToolLike
 from camel.messages import BaseMessage
 from camel.models import ModelFactory
 from camel.messages import BaseMessage as bm

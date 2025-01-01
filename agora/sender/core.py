@@ -1,21 +1,21 @@
 import inspect
 from typing import Any, Optional
 
-from common.core import Protocol
-from common.errors import ExecutionError, StorageError
-from common.storage import Storage, JSONStorage
-from sender.components.negotiator import SenderNegotiator
-from sender.components.programmer import SenderProgrammer
-from sender.components.protocol_picker import ProtocolPicker
-from sender.components.querier import Querier
-from sender.components.transporter import SenderTransporter, SimpleSenderTransporter
-from common.executor import Executor, RestrictedExecutor
+from agora.common.core import Protocol
+from agora.common.errors import ExecutionError, StorageError
+from agora.common.storage import Storage, JSONStorage
+from agora.sender.components.negotiator import SenderNegotiator
+from agora.sender.components.programmer import SenderProgrammer
+from agora.sender.components.protocol_picker import ProtocolPicker
+from agora.sender.components.querier import Querier
+from agora.sender.components.transporter import SenderTransporter, SimpleSenderTransporter
+from agora.common.executor import Executor, RestrictedExecutor
 
-from common.core import Suitability, TaskSchema, TaskSchemaLike
-from common.memory import ProtocolMemory
-from common.toolformers.base import Tool
+from agora.common.core import Suitability, TaskSchema, TaskSchemaLike
+from agora.common.memory import ProtocolMemory
+from agora.common.toolformers.base import Tool
 
-from utils import encode_as_data_uri
+from agora.utils import encode_as_data_uri
 
 class SenderMemory(ProtocolMemory):
     """

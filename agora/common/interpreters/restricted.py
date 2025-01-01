@@ -4,7 +4,7 @@ from typing import Any, Optional, List
 from RestrictedPython import compile_restricted, safe_builtins, limited_builtins, utility_builtins
 from RestrictedPython.Guards import guarded_iter_unpack_sequence, guarded_unpack_sequence, full_write_guard
 
-from common.errors import ExecutionError
+from agora.common.errors import ExecutionError
 
 def execute_restricted(
     code: str,

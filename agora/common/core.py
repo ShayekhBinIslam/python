@@ -4,9 +4,9 @@ import json
 from types import TracebackType
 from typing import Any, Callable, Dict, List, Optional, TypeAlias
 
-from common.errors import SchemaError
-from common.function_schema import schema_from_function
-from utils import compute_hash, extract_metadata
+from agora.common.errors import SchemaError
+from agora.common.function_schema import schema_from_function
+from agora.utils import compute_hash, extract_metadata
 
 class Suitability(str, Enum):
     """

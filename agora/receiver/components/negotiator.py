@@ -1,8 +1,8 @@
 from typing import List
 
-from common.core import Conversation
-from common.toolformers.base import Tool, ToolLike
-from common.toolformers.base import Toolformer
+from agora.common.core import Conversation
+from agora.common.toolformers.base import Tool, ToolLike
+from agora.common.toolformers.base import Toolformer
 
 NEGOTIATION_RULES = '''
 Here are some rules (that should also be explained to the other GPT):

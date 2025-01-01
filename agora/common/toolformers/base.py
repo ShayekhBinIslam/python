@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 import json
 from typing import Callable, List, Optional, TypeAlias
 
-from common.core import Conversation
-from common.function_schema import DEFAULT_KNOWN_TYPES, PYTHON_TYPE_TO_JSON_SCHEMA_TYPE, schema_from_function, generate_docstring, set_params_and_annotations
+from agora.common.core import Conversation
+from agora.common.function_schema import DEFAULT_KNOWN_TYPES, PYTHON_TYPE_TO_JSON_SCHEMA_TYPE, schema_from_function, generate_docstring, set_params_and_annotations
 
 
 class Tool:

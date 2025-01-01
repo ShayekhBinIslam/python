@@ -2,8 +2,8 @@ from abc import abstractmethod
 import importlib
 from typing import Any, List
 
-from common.toolformers.base import Tool, Conversation
-from common.interpreters.restricted import execute_restricted
+from agora.common.toolformers.base import Tool, Conversation
+from agora.common.interpreters.restricted import execute_restricted
 
 class Executor:
     """Abstract base class for executors that run protocol implementations."""

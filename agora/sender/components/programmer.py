@@ -1,6 +1,6 @@
-from common.core import TaskSchema, TaskSchemaLike
-from common.toolformers.base import Toolformer
-from utils import extract_substring
+from agora.common.core import TaskSchema, TaskSchemaLike
+from agora.common.toolformers.base import Toolformer
+from agora.utils import extract_substring
 
 TASK_PROGRAMMER_PROMPT = '''
 You are ProtocolProgrammerGPT. You will act as an intermediate between a machine (that has a certain input and output schema in JSON) \

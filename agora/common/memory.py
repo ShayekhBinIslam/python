@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from common.core import Protocol
-from common.storage import Storage
-from common.errors import StorageError
+from agora.common.core import Protocol
+from agora.common.storage import Storage
+from agora.common.errors import StorageError
 
 class ProtocolMemory:
     """Manages protocol-related memory, including registration and retrieval of protocols and their implementations."""

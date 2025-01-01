@@ -1,7 +1,7 @@
 from typing import List
 
-from common.toolformers.base import Tool, ToolLike, Toolformer
-from utils import extract_substring
+from agora.common.toolformers.base import Tool, ToolLike, Toolformer
+from agora.utils import extract_substring
 
 NO_MULTIROUND_REPLY = ''' reply takes a single argument, "query", which is a string, and must return a string.
 '''

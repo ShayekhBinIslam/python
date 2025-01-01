@@ -3,7 +3,7 @@
 
 from typing import List, Optional
 
-from common.toolformers.base import Conversation, ToolLike, Toolformer
+from agora.common.toolformers.base import Conversation, ToolLike, Toolformer
 
 
 PROTOCOL_RESPONDER_PROMPT = 'You are ResponderGPT. Below you will find a document describing detailing how to respond to a query. '\

@@ -1,8 +1,8 @@
 from typing import Callable
 
-from common.core import Protocol, TaskSchema, TaskSchemaLike
-from common.toolformers.base import Toolformer
-from utils import extract_metadata, extract_substring
+from agora.common.core import Protocol, TaskSchema, TaskSchemaLike
+from agora.common.toolformers.base import Toolformer
+from agora.utils import extract_metadata, extract_substring
 
 NEGOTIATION_RULES = '''
 Here are some rules (that should also be explained to the other GPT):

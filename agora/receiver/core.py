@@ -1,17 +1,17 @@
 from typing import List, Optional
-from common.core import Suitability
+from agora.common.core import Suitability
 
-from common.toolformers.base import Conversation, ToolLike
-from common.errors import ProtocolRejectedError, ProtocolRetrievalError
-from common.memory import ProtocolMemory
-from common.storage import Storage, JSONStorage
-from common.executor import Executor, RestrictedExecutor
-from receiver.components.responder import Responder
-from receiver.components.protocol_checker import ReceiverProtocolChecker
-from receiver.components.negotiator import ReceiverNegotiator
-from receiver.components.programmer import ReceiverProgrammer
+from agora.common.toolformers.base import Conversation, ToolLike
+from agora.common.errors import ProtocolRejectedError, ProtocolRetrievalError
+from agora.common.memory import ProtocolMemory
+from agora.common.storage import Storage, JSONStorage
+from agora.common.executor import Executor, RestrictedExecutor
+from agora.receiver.components.responder import Responder
+from agora.receiver.components.protocol_checker import ReceiverProtocolChecker
+from agora.receiver.components.negotiator import ReceiverNegotiator
+from agora.receiver.components.programmer import ReceiverProgrammer
 
-from utils import download_and_verify_protocol, extract_metadata
+from agora.utils import download_and_verify_protocol, extract_metadata
 
 
 class ReceiverMemory(ProtocolMemory):
