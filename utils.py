@@ -93,7 +93,7 @@ def download_and_verify_protocol(protocol_hash: str, protocol_source: str, timeo
         elif protocol_source.startswith('data:text/plain;charset=utf-8,'):
             protocol = urllib.parse.unquote(protocol_source[len('data:text/plain;charset=utf-8,'):])
         else:
-            print('Unsupported data URI:', protocol_source)
+            # print('Unsupported data URI:', protocol_source)
             return None
     else:
         response = requests.get(protocol_source, timeout=timeout)
@@ -101,12 +101,12 @@ def download_and_verify_protocol(protocol_hash: str, protocol_source: str, timeo
         if response.status_code == 200:
             protocol = response.text
         else:
-            print('Failed to download protocol from', protocol_source)
+            # print('Failed to download protocol from', protocol_source)
             return None
 
     # Check if the hash matches
     if compute_hash(protocol) == protocol_hash:
         return protocol
 
-    print('Protocol does not match hash:', protocol_source)
+    # print('Protocol does not match hash:', protocol_source)
     return None
