@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "agora-protocol"
+version = "0.2.0"
+description = "Python library for the Agora Protocol."
+authors = ["Samuele Marro <marrosamuele@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "agora" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+langchain-core = "^0.3.20"
+flask = "^3.1"
+requests = "^2.32"
+PyYAML = "^6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
