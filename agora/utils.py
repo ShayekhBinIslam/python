@@ -6,13 +6,15 @@ import urllib.parse
 import yaml
 from typing import Optional
 
-def extract_substring(text: str, start_tag: str, end_tag: str) -> Optional[str]:
+def extract_substring(text: str, start_tag: str, end_tag: str, include_tags=True) -> Optional[str]:
     """Extracts a substring from the given text, bounded by start_tag and end_tag.
+    Case insensitive.
 
     Args:
         text (str): The source string.
         start_tag (str): The beginning delimiter.
         end_tag (str): The ending delimiter.
+        include_tags (bool): Whether to include the tags in the result. Defaults to True.
 
     Returns:
         Optional[str]: The extracted substring or None if not found.
@@ -22,7 +24,9 @@ def extract_substring(text: str, start_tag: str, end_tag: str) -> Optional[str]:
 
     if start_position == -1 or end_position == -1:
         return None
-
+    
+    if include_tags:
+        return text[start_position:end_position + len(end_tag)].strip()
     return text[start_position + len(start_tag):end_position].strip()
 
 def compute_hash(s: str) -> str:
@@ -50,7 +54,7 @@ def extract_metadata(text: str) -> dict:
     Returns:
         dict: A dictionary of extracted metadata.
     """
-    metadata = extract_substring(text, '---', '---')
+    metadata = extract_substring(text, '---', '---', include_tags=False)
 
     metadata = yaml.safe_load(metadata)
 

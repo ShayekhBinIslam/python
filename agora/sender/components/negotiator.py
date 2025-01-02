@@ -80,7 +80,7 @@ class SenderNegotiator:
 
             # print('Checking if we can extract from:', message)
             # print('---------')
-            protocol = extract_substring(message, '<FINALPROTOCOL>', '</FINALPROTOCOL>')
+            protocol = extract_substring(message, '<FINALPROTOCOL>', '</FINALPROTOCOL>', include_tags=False)
 
             if protocol is None:
                 # print('Could not extract')

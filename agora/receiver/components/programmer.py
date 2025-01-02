@@ -95,7 +95,7 @@ class ReceiverProgrammer:
         for _ in range(self.num_attempts):
             reply = conversation(message, print_output=True)
 
-            implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>')
+            implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>', include_tags=False)
 
             if implementation is not None:
                 break
