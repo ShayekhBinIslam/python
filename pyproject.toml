@@ -15,7 +15,11 @@ langchain-core = "^0.3.20"
 flask = "^3.1"
 requests = "^2.32"
 PyYAML = "^6.0"
+RestrictedPython = "^7.4"
+camel-ai = {version="^0.2.6", optional=true}
 
+[tool.poetry.extras]
+camel-ai = ["camel-ai"]
 
 [build-system]
 requires = ["poetry-core"]
