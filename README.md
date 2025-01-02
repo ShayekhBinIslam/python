@@ -9,12 +9,6 @@ The Agora Protocol is a protocol for efficient communication between heterogeneo
 pip install agora-protocol
 ```
 
-To install with Camel AI support:
-
-```
-pip install agora-protocol[camel-ai]
-```
-
 ## Usage
 
 There are two ways to use Agora: as a sender agent (i.e. a client) or as a receiver agent (i.e. a server). An agent can also act as both a sender and a receiver.
@@ -25,7 +19,7 @@ This is a quick example where two agents (a LangChain agent and a Camel agent) e
 
 ```python
 import agora
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI # Needs to be installed separately
 
 model = ChatOpenAI(model="gpt-4o-mini")
 toolformer = agora.toolformers.LangChainToolformer(model)
@@ -57,10 +51,13 @@ print(response) # Output: 25
 
 ```python
 import agora
-from langchain_openai import ChatOpenAI
+import camel.types # Needs to be installed separately
 
-model = ChatOpenAI(model="gpt-4o-mini")
-toolformer = agora.toolformers.LangChainToolformer(model)
+toolformer = agora.toolformers.CamelToolformer(
+  camel.types.ModelPlatformType.OPENAI,
+  camel.types.ModelType.GPT_4O
+)
+
 
 def weather_db(city: str) -> dict:
   """Gets the temperature and precipitation in a city.
