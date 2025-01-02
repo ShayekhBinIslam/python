@@ -509,6 +509,17 @@ class Sender:
 
                 return self.execute_task(task_id, task_schema, task_data, target)
 
-            return wrapped
+            if 'target' in task_schema.input_schema['required']:
+                raise ValueError('The task schema should not require a target field')
+
+            tool_input_schema = dict(task_schema.input_schema)
+            tool_input_schema['properties']['target'] = {
+                'type': 'string',
+                'description': 'The URL of the target system or service for the task'
+            }
+
+            tool = Tool(wrapped.__name__, task_schema.description, tool_input_schema, task_schema.output_schema, wrapped)
+
+            return tool.as_annotated_function()
 
         return wrapper
