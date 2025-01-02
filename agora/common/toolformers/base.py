@@ -241,7 +241,14 @@ class Tool:
         Returns:
             Callable: The annotated function.
         """
-        return set_params_and_annotations(self.name, self.docstring, self._args_schema_parsed, self._return_schema_parsed)(self.func)
+        return_schema_parsed = self._return_schema_parsed
+
+        if return_schema_parsed:
+            return_type = return_schema_parsed[0]
+        else:
+            return_type = None
+
+        return set_params_and_annotations(self.name, self.docstring, self._args_schema_parsed, return_type)(self.func)
         
 
 ToolLike: TypeAlias = Callable | Tool
