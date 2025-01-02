@@ -85,7 +85,7 @@ class Tool:
                 name=name or func.__name__,
                 description=description or schema.get('description', func.__doc__),
                 args_schema=args_schema or schema.get('parameters', {}),
-                return_schema=schema.get('returns', {}),
+                return_schema=schema.get('return', {}),
                 func=func
             )
         else:

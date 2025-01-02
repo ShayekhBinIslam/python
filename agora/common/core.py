@@ -199,7 +199,7 @@ class TaskSchema:
             input_schema = schema.get('parameters', None)
 
         if output_schema is None:
-            output_schema = schema.get('returns', None)
+            output_schema = schema.get('return', None)
 
         return TaskSchema(description, input_schema, output_schema)
     

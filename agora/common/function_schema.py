@@ -216,7 +216,7 @@ def schema_from_function(func: Callable, strict: bool = False, known_types: dict
                 if return_type not in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE:
                     raise ValueError(f"Return type {return_type} not supported in JSON schema")
 
-                parsed_schema['function']['returns'] = {
+                parsed_schema['function']['return'] = {
                     'type': PYTHON_TYPE_TO_JSON_SCHEMA_TYPE[return_type],
                     'description': return_description
                 }
