@@ -22,7 +22,7 @@ class LangChainConversation(Conversation):
         self.messages = messages
         self.category = category
 
-    def chat(self, message: str, print_output: bool = True) -> str:
+    def __call__(self, message: str, print_output: bool = True) -> str:
         """Sends a message to the conversation and returns the AI response.
 
         Args:
