@@ -51,7 +51,7 @@ class SenderNegotiator:
         self.toolformer = toolformer
         self.max_rounds = max_rounds
 
-    def negotiate_protocol_for_task(self, task_schema: TaskSchemaLike, callback: Callable[[str], str], additional_info: str = '') -> Protocol:
+    def __call__(self, task_schema: TaskSchemaLike, callback: Callable[[str], str], additional_info: str = '') -> Protocol:
         """Negotiates and finalizes a protocol based on the task schema.
 
         Args:

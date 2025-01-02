@@ -323,7 +323,7 @@ class Sender:
                 # print('Response to negotiator:', response)
                 return response
 
-            protocol = self.negotiator.negotiate_protocol_for_task(task_schema, send_query)
+            protocol = self.negotiator(task_schema, send_query)
 
         if protocol is not None:
             self.memory.register_new_protocol(protocol.hash, protocol.protocol_document, protocol.sources, protocol.metadata)
