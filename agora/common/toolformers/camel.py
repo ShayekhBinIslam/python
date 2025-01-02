@@ -65,13 +65,13 @@ class CamelConversation(Conversation):
 class CamelToolformer(Toolformer):
     """Toolformer implementation using the Camel AI framework."""
 
-    def __init__(self, model_platform: 'camel.types.ModelPlatformType', model_type: 'camel.types.ModelType', model_config_dict: dict, name: Optional[str] = None) -> None:
+    def __init__(self, model_platform: 'camel.types.ModelPlatformType', model_type: 'camel.types.ModelType', model_config_dict: Optional[dict] = None, name: Optional[str] = None) -> None:
         """Initialize the CamelToolformer with model details.
 
         Args:
             model_platform (ModelPlatformType): The platform of the model (e.g. "openai").
             model_type (ModelPlatformType): The type of the model (e.g. "gpt-4o").
-            model_config_dict (dict): Configuration dictionary for the model.
+            model_config_dict (dict, optional): Configuration dictionary for the model. Defaults to None (empty dict).
             name (Optional[str], optional): Optional name for the Toolformer. Defaults to None.
 
         Raises:
@@ -80,6 +80,9 @@ class CamelToolformer(Toolformer):
 
         if CAMEL_IMPORT_ERROR:
             raise CAMEL_IMPORT_ERROR
+        
+        if model_config_dict is None:
+            model_config_dict = {}
 
         self.model_platform = model_platform
         self.model_type = model_type
