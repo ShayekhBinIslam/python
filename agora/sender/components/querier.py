@@ -163,9 +163,7 @@ class Querier:
             if found_output is not None:
                 return 'You have already registered an output. You cannot register another one.'
 
-            output = json.dumps(kwargs)
-
-            found_output = output
+            found_output = kwargs
             return 'Done'
 
         register_output_tool = Tool('deliverStructuredOutput', 'Deliver the structured output to the machine.',
@@ -232,6 +230,25 @@ class Querier:
         """
         query_description = construct_query_description(protocol_document, task_schema, task_data)
         task_schema = TaskSchema.from_taskschemalike(task_schema)
-        output_schema = task_schema.output_schema # TODO: Should I just use tuples? Do pydantic & co. work with complex dicts?
+        output_schema = task_schema.output_schema
 
-        return self.handle_conversation(PROTOCOL_QUERIER_PROMPT, query_description, output_schema, callback)
+        if output_schema is None:
+            raise ValueError('Task schema must have an output schema to deliver structured output.')
+        
+        if output_schema['type'] == 'object':
+            object_output = True
+        else:
+            output_schema = {
+                'type': 'object',
+                'properties': {
+                    'output': output_schema
+                }
+            }
+            object_output = False
+
+        result = self.handle_conversation(PROTOCOL_QUERIER_PROMPT, query_description, output_schema, callback)
+
+        if object_output:
+            return result
+
+        return result['output']

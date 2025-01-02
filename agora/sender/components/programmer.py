@@ -8,7 +8,7 @@ and a remote server that can perform a task following a certain protocol. Your t
 (which follows the input schema), sends query in a format defined by the protocol, parses it and returns the output according to the output schema so that \
 the machine can use it.
 The routine is a Python file that contains a function "send_query". send_query takes a single argument, "task_data", which is a dictionary, and must return \
-a dictionary, which is the response to the query formatted according to the output schema.
+one of (dict, str, float, int, None), which is the response to the query formatted according to the output schema.
 In order to communicate with the remote server, you can use the function "send_to_server" that is already available in the environment.
 send_to_server takes a single argument, "query" (which is a string formatted according to the protocol), and returns a string (again formatted according \
 to the protocol). Do not worry about managing communication, everything is already set up for you. Just focus on preparing the right query.

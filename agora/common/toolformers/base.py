@@ -151,20 +151,9 @@ class Tool:
         """
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
         params = {}
-
-        args_schema = dict(self.args_schema)
-
-        if args_schema.get('type') not in ['object', None]:
-            # Single-argument function
-            args_schema = {
-                'type': 'object',
-                'properties': {
-                    'arg': args_schema
-                }
-            }
         
 
-        for arg_name, arg_schema in args_schema['properties'].items():
+        for arg_name, arg_schema in self.args_schema['properties'].items():
             arg_type = inverted_types[arg_schema['type']]
             arg_description = arg_schema.get('description', '')
 
