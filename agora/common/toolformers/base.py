@@ -79,11 +79,12 @@ class Tool:
         """
         if infer_schema:
             schema = schema_from_function(func, known_types=inference_known_types, strict=strict_inference)
+            schema = schema.get('function', {})
 
             return Tool(
                 name=name or func.__name__,
                 description=description or schema.get('description', func.__doc__),
-                args_schema=args_schema or schema.get('properties', {}),
+                args_schema=args_schema or schema.get('parameters', {}),
                 return_schema=schema.get('returns', {}),
                 func=func
             )
@@ -151,7 +152,19 @@ class Tool:
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
         params = {}
 
-        for arg_name, arg_schema in self.args_schema.items():
+        args_schema = dict(self.args_schema)
+
+        if args_schema.get('type') not in ['object', None]:
+            # Single-argument function
+            args_schema = {
+                'type': 'object',
+                'properties': {
+                    'arg': args_schema
+                }
+            }
+        
+
+        for arg_name, arg_schema in args_schema['properties'].items():
             arg_type = inverted_types[arg_schema['type']]
             arg_description = arg_schema.get('description', '')
 

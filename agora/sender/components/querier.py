@@ -169,7 +169,7 @@ class Querier:
             return 'Done'
 
         register_output_tool = Tool('deliverStructuredOutput', 'Deliver the structured output to the machine.',
-            output_schema
+            output_schema, { "type": "string", "description": "The sytem message"}
         , register_output)
 
         def register_error(error : str) -> str:
@@ -231,6 +231,7 @@ class Querier:
             str: The structured output resulting from the querying process.
         """
         query_description = construct_query_description(protocol_document, task_schema, task_data)
-        output_schema = task_schema['output'] # TODO: Should I just use tuples? Do pydantic & co. work with complex dicts?
+        task_schema = TaskSchema.from_taskschemalike(task_schema)
+        output_schema = task_schema.output_schema # TODO: Should I just use tuples? Do pydantic & co. work with complex dicts?
 
         return self.handle_conversation(PROTOCOL_QUERIER_PROMPT, query_description, output_schema, callback)

@@ -160,7 +160,7 @@ def add_annotations_from_docstring(func: Callable, known_types: dict = DEFAULT_K
 
 
 def schema_from_function(func: Callable, strict: bool = False, known_types: dict = DEFAULT_KNOWN_TYPES) -> dict:
-    """Create a JSON schema from a function's signature and docstring.
+    """Create an OpenAI-like JSON schema from a function's signature and docstring.
 
     Args:
         func (Callable): The function to generate the schema from.
@@ -180,6 +180,19 @@ def schema_from_function(func: Callable, strict: bool = False, known_types: dict
     # TODO: Best-effort non-destructive Arguments -> Args, Parameters -> Args, Output -> Returns
 
     parsed_schema = langchain.tools.base.create_schema_from_function(func_name, func, parse_docstring=True).model_json_schema()
+
+    parsed_schema = {
+        'type': 'function',
+        'function': {
+            'name': func_name,
+            'description': parsed_schema['description'],
+            'parameters': {
+                'type': parsed_schema['type'],
+                'properties': parsed_schema['properties'],
+                'required': parsed_schema['required'],
+            },
+        }
+    }
 
     if 'Returns:' in func.__doc__:
         returns = func.__doc__.split('Returns:')[1].strip()
@@ -203,7 +216,7 @@ def schema_from_function(func: Callable, strict: bool = False, known_types: dict
                 if return_type not in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE:
                     raise ValueError(f"Return type {return_type} not supported in JSON schema")
 
-                parsed_schema['returns'] = {
+                parsed_schema['function']['returns'] = {
                     'type': PYTHON_TYPE_TO_JSON_SCHEMA_TYPE[return_type],
                     'description': return_description
                 }
