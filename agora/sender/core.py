@@ -1,7 +1,7 @@
 import inspect
 from typing import Any, Optional
 
-from agora.common.core import Protocol
+from agora.common.core import Protocol, Suitability, TaskSchema, TaskSchemaLike
 from agora.common.errors import ExecutionError, StorageError
 from agora.common.storage import Storage, JSONStorage
 from agora.sender.components.negotiator import SenderNegotiator
@@ -11,9 +11,10 @@ from agora.sender.components.querier import Querier
 from agora.sender.components.transporter import SenderTransporter, SimpleSenderTransporter
 from agora.common.executor import Executor, RestrictedExecutor
 
-from agora.common.core import Suitability, TaskSchema, TaskSchemaLike
 from agora.common.memory import ProtocolMemory
 from agora.common.toolformers.base import Tool
+
+from agora.sender.schema_generator import SchemaGenerator
 
 from agora.utils import encode_as_data_uri
 
@@ -473,7 +474,7 @@ class Sender:
 
             return response
 
-    def task(self, task_id: Optional[str] = None, description: Optional[str] = None, input_schema: Optional[dict] = None, output_schema: Optional[dict] = None):
+    def task(self, task_id: Optional[str] = None, description: Optional[str] = None, input_schema: Optional[dict] = None, output_schema: Optional[dict] = None, schema_generator: Optional[SchemaGenerator] = None):
         """Decorator to define a task with optional schemas and description.
 
         Args:
@@ -490,7 +491,14 @@ class Sender:
 
             if task_id is None:
                 task_id = func.__name__
-            task_schema = TaskSchema.from_function(func, description=description, input_schema=input_schema, output_schema=output_schema)
+            
+            try:
+                task_schema = TaskSchema.from_function(func, description=description, input_schema=input_schema, output_schema=output_schema)
+            except Exception as e:
+                if schema_generator is None:
+                    raise e
+
+                task_schema = schema_generator.from_function(func)
 
             def wrapped(*args, target=None, **kwargs):
                 # Figure out from the function signature what the input data should be
