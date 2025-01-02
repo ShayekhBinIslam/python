@@ -151,7 +151,6 @@ class Tool:
         """
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
         params = {}
-        
 
         for arg_name, arg_schema in self.args_schema['properties'].items():
             arg_type = inverted_types[arg_schema['type']]

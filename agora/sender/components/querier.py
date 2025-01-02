@@ -167,7 +167,7 @@ class Querier:
             return 'Done'
 
         register_output_tool = Tool('deliverStructuredOutput', 'Deliver the structured output to the machine.',
-            output_schema, { "type": "string", "description": "The sytem message"}
+            output_schema, { "type": "string", "description": "The sytem response to the structured output." }
         , register_output)
 
         def register_error(error : str) -> str:
@@ -235,7 +235,7 @@ class Querier:
         if output_schema is None:
             raise ValueError('Task schema must have an output schema to deliver structured output.')
         
-        if output_schema['type'] == 'object':
+        if output_schema['type'] == 'object' and 'properties' in output_schema:
             object_output = True
         else:
             output_schema = {
