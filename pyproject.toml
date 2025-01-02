@@ -10,8 +10,10 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.10,<3.13"
+langchain = "^0.3.12"
 langchain-core = "^0.3.20"
+langgraph = "^0.2.60"
 flask = "^3.1"
 requests = "^2.32"
 PyYAML = "^6.0"
