@@ -177,9 +177,11 @@ def schema_from_function(func: Callable, strict: bool = False, known_types: dict
         # Try to add annotations from docstring
         func = add_annotations_from_docstring(func)
 
-    # TODO: Best-effort non-destructive Arguments -> Args, Parameters -> Args, Output -> Returns
+    copied_function = copy_func(func)
+    copied_function.__annotations__ = func.__annotations__
+    copied_function.__doc__ = copied_function.__doc__.replace('Arguments:\n', 'Args:\n').replace('Parameters:\n', 'Args:\n').replace('Output:\n', 'Returns:\n')
 
-    parsed_schema = langchain.tools.base.create_schema_from_function(func_name, func, parse_docstring=True).model_json_schema()
+    parsed_schema = langchain.tools.base.create_schema_from_function(func_name, copied_function, parse_docstring=True).model_json_schema()
 
     parsed_schema = {
         'type': 'function',
