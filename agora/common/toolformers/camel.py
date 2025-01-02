@@ -65,7 +65,7 @@ class CamelConversation(Conversation):
 class CamelToolformer(Toolformer):
     """Toolformer implementation using the Camel AI framework."""
 
-    def __init__(self, model_platform: camel.types.ModelPlatformType, model_type: camel.types.ModelType, model_config_dict: dict, name: Optional[str] = None) -> None:
+    def __init__(self, model_platform: 'camel.types.ModelPlatformType', model_type: 'camel.types.ModelType', model_config_dict: dict, name: Optional[str] = None) -> None:
         """Initialize the CamelToolformer with model details.
 
         Args:
