@@ -1,7 +1,9 @@
-# agora-python
+# python
 Python library for the Agora Protocol.
 
 The Agora Protocol is a protocol for efficient communication between heterogeneous agents. It allows agents of any framework to communicate with agents in any other framework, while maximizing efficiency.
+
+**Note**: Agora Python is currently in Open Beta! Expect breaking changes from one version to the other.
 
 ## Installation
 
@@ -26,9 +28,6 @@ toolformer = agora.toolformers.LangChainToolformer(model)
 
 sender = agora.Sender.make_default(toolformer)
 
-# Any properly annotated function with Google-style docstrings
-# can be automatically converted to a task. Refer to the documentation for other ways
-# to describe tasks
 @sender.task()
 def get_temperature(city : str) -> int:
   """
@@ -82,6 +81,8 @@ server = agora.ReceiverServer(receiver)
 server.run(port=5000)
 ```
 
+See [Getting Started](./docs/getting-started.md) for a more complete overview.
+
 ## Contributing
 
-If you want to contribute, join our [Discord](https://discord.gg/MXmfhwQ4FB) to find out more!
+If you want to contribute or stay up to date with development, join our [Discord](https://discord.gg/MXmfhwQ4FB) to find out more!
