@@ -66,7 +66,7 @@ class Receiver:
         executor: Executor = None,
         tools: List[ToolLike] = None,
         additional_info: str = '',
-        storage_path: str = './agora/storage/receiver.json',
+        storage_path: str = './.agora/storage/receiver.json',
         implementation_threshold: int = 5
     ) -> 'Receiver':
         """
