@@ -26,7 +26,7 @@ FROM_FUNCTION_EXTRA_RULES = '''
 - If the function has type hints, use them and do not override them.
 - Do not add any new input parameters.'''
 
-class SchemaGenerator:
+class TaskSchemaGenerator:
     """Toolformer-based task schema generation."""
     def __init__(self, toolformer: Toolformer):
         """Initialize the SchemaGenerator.

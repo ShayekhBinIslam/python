@@ -15,7 +15,7 @@ from agora.common.executor import Executor, RestrictedExecutor
 from agora.common.toolformers.base import Tool
 
 from agora.sender.memory import SenderMemory
-from agora.sender.schema_generator import SchemaGenerator
+from agora.sender.schema_generator import TaskSchemaGenerator
 
 from agora.utils import encode_as_data_uri
 
@@ -282,7 +282,7 @@ class Sender:
 
             return response
 
-    def task(self, task_id: Optional[str] = None, description: Optional[str] = None, input_schema: Optional[dict] = None, output_schema: Optional[dict] = None, schema_generator: Optional[SchemaGenerator] = None):
+    def task(self, task_id: Optional[str] = None, description: Optional[str] = None, input_schema: Optional[dict] = None, output_schema: Optional[dict] = None, schema_generator: Optional[TaskSchemaGenerator] = None):
         """Decorator to define a task with optional schemas and description.
 
         Args:
