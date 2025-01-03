@@ -15,7 +15,7 @@ from agora.common.executor import Executor, RestrictedExecutor
 from agora.common.toolformers.base import Tool
 
 from agora.sender.memory import SenderMemory
-from agora.sender.schema_generator import SchemaGenerator
+from agora.sender.schema_generator import TaskSchemaGenerator
 
 from agora.utils import encode_as_data_uri
 

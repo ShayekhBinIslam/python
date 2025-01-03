@@ -1,7 +1,7 @@
 from agora.common.core import Conversation, Protocol, Suitability
 from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.toolformers.base import Toolformer, Tool, ToolLike
-from agora.sender import SchemaGenerator, Sender, SenderMemory
+from agora.sender import TaskSchemaGenerator, Sender, SenderMemory
 from agora.receiver import Receiver, ReceiverMemory, ReceiverServer
 
 import agora.common.core as core
