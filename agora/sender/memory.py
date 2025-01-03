@@ -110,6 +110,28 @@ class SenderMemory(ProtocolMemory):
         if target not in self.storage['num_conversations'][task_id]:
             return 0
         return self.storage['num_conversations'][task_id][target]
+
+    def increment_protocol_conversations(self, protocol_id):
+        """
+        Increments the conversation counter for a given protocol.
+
+        Args:
+            protocol_id: The protocol identifier.
+        """
+        num_conversations = self.get_protocol_conversations(protocol_id)
+        self.set_extra_field(protocol_id, 'conversations', num_conversations + 1)
+
+    def get_protocol_conversations(self, protocol_id):
+        """
+        Retrieves the number of stored conversations for a protocol.
+
+        Args:
+            protocol_id: The protocol identifier.
+
+        Returns:
+            int: The number of conversations.
+        """
+        return self.get_extra_field(protocol_id, 'conversations', 0)
     
     def has_suitable_protocol(self, task_id, target):
         """

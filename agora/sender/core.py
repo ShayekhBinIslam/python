@@ -178,7 +178,7 @@ class Sender:
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
-        if implementation is None and self.memory.get_task_conversations(protocol_id, None) > self.implementation_threshold:
+        if implementation is None and self.memory.get_protocol_conversations(protocol_id) > self.implementation_threshold:
             protocol = self.memory.get_protocol(protocol_id)
             implementation = self.programmer(task_schema, protocol.protocol_document)
             self.memory.register_implementation(protocol_id, implementation)
@@ -247,6 +247,7 @@ class Sender:
         sources = []
 
         if protocol is not None:
+            self.memory.increment_protocol_conversations(protocol.hash)
             sources = protocol.sources
 
             if len(sources) == 0:
