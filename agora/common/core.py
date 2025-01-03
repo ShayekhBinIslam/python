@@ -169,11 +169,11 @@ class TaskSchema(Mapping):
         Raises:
             SchemaError: If required fields are missing in the JSON dictionary.
         """
-        for field in ['description', 'input', 'output']:
+        for field in ['description', 'input_schema', 'output_schema']:
             if field not in json_dict:
                 raise SchemaError(f'"{field}" field is required in TaskSchema')
     
-        return TaskSchema(json_dict['description'], json_dict['input'], json_dict['output'])
+        return TaskSchema(json_dict['description'], json_dict['input_schema'], json_dict['output_schema'])
     
     def to_json(self) -> dict:
         """
@@ -182,11 +182,7 @@ class TaskSchema(Mapping):
         Returns:
             dict: The JSON representation of the TaskSchema.
         """
-        return {
-            'description': self.description,
-            'input': self.input_schema,
-            'output': self.output_schema
-        }
+        return self.fields
     
     @staticmethod
     def from_function(
