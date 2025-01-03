@@ -256,7 +256,7 @@ class Sender:
 
         with self.transporter.new_conversation(
             target,
-            protocol.metadata['multiround'] if protocol else True,
+            protocol.metadata.get('multiround', True) if protocol else True,
             protocol.hash if protocol else None,
             sources
         ) as external_conversation:
