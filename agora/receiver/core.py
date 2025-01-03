@@ -86,10 +86,9 @@ class Receiver:
     """
     Handles receiving and processing protocols, including negotiation and execution.
     """
-
     def __init__(
         self,
-        storage: Storage,
+        memory: ReceiverMemory,
         responder: Responder,
         protocol_checker: ReceiverProtocolChecker,
         negotiator: ReceiverNegotiator,
@@ -103,7 +102,7 @@ class Receiver:
         Initializes the Receiver with needed components and configurations.
 
         Args:
-            storage (Storage): Backend storage for memory.
+            memory (ReceiverMemory): Manages protocol memory.
             responder (Responder): Handles responses based on protocols.
             protocol_checker (ReceiverProtocolChecker): Checks protocol validity.
             negotiator (ReceiverNegotiator): Manages protocol negotiations.
@@ -113,7 +112,7 @@ class Receiver:
             additional_info (str, optional): Extra info used during operation.
             implementation_threshold (int, optional): Threshold for auto-generating code.
         """
-        self.memory = ReceiverMemory(storage)
+        self.memory = memory
         self.responder = responder
         self.protocol_checker = protocol_checker
         self.negotiator = negotiator
@@ -134,7 +133,7 @@ class Receiver:
         executor: Executor = None,
         tools: List[ToolLike] = None,
         additional_info: str = '',
-        storage_path: str = './receiver_storage.json',
+        storage_path: str = './agora/storage/receiver.json',
         implementation_threshold: int = 5
     ) -> 'Receiver':
         """
@@ -161,6 +160,7 @@ class Receiver:
 
         if storage is None:
             storage = JSONStorage(storage_path)
+        memory = ReceiverMemory(storage)
 
         if responder is None:
             responder = Responder(toolformer)
@@ -177,7 +177,7 @@ class Receiver:
         if executor is None:
             executor = RestrictedExecutor()
 
-        return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info, implementation_threshold)
+        return Receiver(memory, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info, implementation_threshold)
     
     def _get_implementation(self, protocol_id: str) -> Optional[str]:
         """

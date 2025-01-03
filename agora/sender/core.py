@@ -221,7 +221,7 @@ class Sender:
 
     def __init__(
             self,
-            storage: Storage,
+            memory: SenderMemory,
             protocol_picker: ProtocolPicker,
             negotiator: SenderNegotiator,
             programmer: SenderProgrammer,
@@ -235,7 +235,7 @@ class Sender:
         """Initialize the Sender with the necessary components and thresholds.
 
         Args:
-            storage (Storage): The storage backend for managing Sender memory.
+            memory (SenderMemory): Memory component for storing protocols and task conversations.
             protocol_picker (ProtocolPicker): Component responsible for selecting protocols.
             negotiator (SenderNegotiator): Handles negotiation of protocols.
             programmer (SenderProgrammer): Generates protocol implementations.
@@ -246,7 +246,7 @@ class Sender:
             negotiation_threshold (int, optional): Threshold for negotiation attempts. Defaults to 10.
             implementation_threshold (int, optional): Threshold for implementation generation. Defaults to 5.
         """
-        self.memory = SenderMemory(storage)
+        self.memory = memory
         self.protocol_picker = protocol_picker
         self.negotiator = negotiator
         self.programmer = programmer
@@ -267,7 +267,7 @@ class Sender:
         executor: Executor = None,
         querier: Querier = None,
         transporter: SenderTransporter = None,
-        storage_path: str = './sender_storage.json',
+        storage_path: str = './agora/storage/sender.json',
         protocol_threshold: int = 5,
         negotiation_threshold: int = 10,
         implementation_threshold: int = 5
@@ -293,6 +293,8 @@ class Sender:
         """
         if storage is None:
             storage = JSONStorage(storage_path)
+        memory = SenderMemory(storage)
+
         if protocol_picker is None:
             protocol_picker = ProtocolPicker(toolformer)
         if negotiator is None:
@@ -306,7 +308,7 @@ class Sender:
         if transporter is None:
             transporter = SimpleSenderTransporter()
         
-        return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
+        return Sender(memory, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
     def _negotiate_protocol(self, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
         """Negotiate a protocol based on the task schema and target.
