@@ -1,4 +1,5 @@
-from agora.sender.core import Sender, SenderMemory
+from agora.sender.core import Sender
+from agora.sender.memory import SenderMemory
 from agora.sender.schema_generator import SchemaGenerator
 
 import agora.sender.schema_generator as schema_generator

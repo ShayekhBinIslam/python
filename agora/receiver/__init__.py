@@ -1,4 +1,5 @@
-from agora.receiver.core import Receiver, ReceiverMemory
+from agora.receiver.core import Receiver
+from agora.receiver.memory import ReceiverMemory
 from agora.receiver.server import ReceiverServer
 
 import agora.receiver.server as server
