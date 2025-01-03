@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from enum import Enum
 import json
 from types import TracebackType
@@ -117,7 +118,7 @@ class Protocol:
         """
         return f'Protocol {self.hash}\nSources: {self.sources}\nMetadata: {self.metadata}\n\n{self.protocol_document}\n\n'
 
-class TaskSchema:
+class TaskSchema(Mapping):
     """Defines the schema for a task, including description and input/output schemas."""
 
     def __init__(
@@ -144,6 +145,15 @@ class TaskSchema:
             'input_schema': self.input_schema,
             'output_schema': self.output_schema
         }
+    
+    def __len__(self):
+        return len(self.fields)
+    
+    def __iter__(self):
+        return iter(self.fields)
+    
+    def __getitem__(self, key):
+        return self.fields[key]
 
     @staticmethod
     def from_json(json_dict : dict) -> 'TaskSchema':
