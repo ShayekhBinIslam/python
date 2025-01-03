@@ -4,6 +4,7 @@ from typing import Callable, Optional, TypeAlias
 
 from agora.common.errors import SchemaError
 from agora.common.function_schema import schema_from_function
+from agora.sender.schema_generator import TaskSchemaGenerator
 
 class TaskSchema(Mapping):
     """Defines the schema for a task, including description and input/output schemas."""
@@ -76,21 +77,34 @@ class TaskSchema(Mapping):
         func: Callable,
         description: Optional[str] = None,
         input_schema: Optional[dict] = None,
-        output_schema: Optional[dict] = None
+        output_schema: Optional[dict] = None,
+        generator: Optional[TaskSchemaGenerator] = None
     ) -> 'TaskSchema':
         """
         Creates a TaskSchema from a function, inferring schemas if necessary.
 
         Args:
             func (Callable): The function to infer the schema from.
-            description (Optional[str], optional): A description of the task. Defaults to None.
-            input_schema (Optional[dict], optional): The input schema. Defaults to None.
-            output_schema (Optional[dict], optional): The output schema. Defaults to None.
+            description (Optional[str], optional): Overrides the task description. Defaults to None.
+            input_schema (Optional[dict], optional): Overrides the input schema. Defaults to None.
+            output_schema (Optional[dict], optional): Overrides the output schema. Defaults to None.
+            generator (Optional[TaskSchemaGenerator], optional): Used to fill the fields that could not be parsed from function introspection. Defaults to None.
+            strict: Throw an error if the schema cannot be generated from the function. Defaults to True.
 
         Returns:
             TaskSchema: An instance of TaskSchema based on the function.
         """
+
+        if description is not None and input_schema is None and output_schema is None:
+            # We can generate the schema directly
+            return TaskSchema(description, input_schema, output_schema)
+
+        try:
             schema = schema_from_function(func)
+        except Exception as e:
+            if generator is None:
+                raise e
+            schema = generator.from_function(func, description, input_schema, output_schema).fields
 
         if description is None:
             description = schema.get('description', None)
@@ -101,6 +115,7 @@ class TaskSchema(Mapping):
         if output_schema is None:
             output_schema = schema.get('output_schema', None)
 
+        # TODO: Throw an error if any of the fields are still None
 
         return TaskSchema(description, input_schema, output_schema)
     
