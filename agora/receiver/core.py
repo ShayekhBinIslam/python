@@ -154,8 +154,6 @@ class Receiver:
         implementation = None
 
         if protocol_hash is not None:
-            self.memory.increment_protocol_conversations(protocol_hash)
-
             if not self.memory.is_known(protocol_hash):
                 for protocol_source in protocol_sources:
                     protocol_document = download_and_verify_protocol(protocol_hash, protocol_source)
@@ -184,6 +182,8 @@ class Receiver:
                 raise ProtocolRejectedError(f'{protocol_hash} is not suitable for execution')
 
             implementation = self._get_implementation(protocol_hash)
+
+        self.memory.increment_protocol_conversations(protocol_hash)
 
         if implementation is None:
             return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
