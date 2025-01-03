@@ -37,9 +37,9 @@ def construct_query_description(protocol_document: str, task_schema: TaskSchemaL
     task_schema = TaskSchema.from_taskschemalike(task_schema).to_json()
     query_description += 'JSON schema of the task:\n\n'
     query_description += 'Input (i.e. what the machine will provide you):\n'
-    query_description += json.dumps(task_schema['input'], indent=2) + '\n\n'
+    query_description += json.dumps(task_schema['input_schema'], indent=2) + '\n\n'
     query_description += 'Output (i.e. what you have to provide to the machine):\n'
-    query_description += json.dumps(task_schema['output'], indent=2) + '\n\n'
+    query_description += json.dumps(task_schema['output_schema'], indent=2) + '\n\n'
     query_description += 'JSON data of the task:\n\n'
     query_description += json.dumps(task_data, indent=2) + '\n\n'
 

@@ -1,4 +1,4 @@
-from agora.sender.task_schema import TaskSchema
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.toolformers.base import Toolformer
 from agora.utils import extract_substring
 

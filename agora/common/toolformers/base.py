@@ -222,7 +222,7 @@ class Tool:
 
         signature_args = []
 
-        for arg_name, arg_schema in self.args_schema.items():
+        for arg_name, arg_schema in self.args_schema['properties'].items():
             arg_type = inverted_types[arg_schema['type']].__name__
             signature_args.append(f'{arg_name}: {arg_type}')
 

@@ -92,6 +92,8 @@ class SenderMemory(ProtocolMemory):
             self.storage['num_conversations'][task_id][target] = 0
         self.storage['num_conversations'][task_id][target] += 1
 
+        self.storage.save_memory()
+
     def get_task_conversations(self, task_id, target):
         """
         Retrieves the number of stored conversations for a task and target.
