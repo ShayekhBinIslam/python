@@ -79,13 +79,12 @@ class Tool:
         """
         if infer_schema:
             schema = schema_from_function(func, known_types=inference_known_types, strict=strict_inference)
-            schema = schema.get('function', {})
 
             return Tool(
                 name=name or func.__name__,
                 description=description or schema.get('description', func.__doc__),
-                args_schema=args_schema or schema.get('parameters', {}),
-                return_schema=schema.get('return', {}),
+                args_schema=args_schema or schema.get('input_schema', {}),
+                return_schema=schema.get('output_schema', {}),
                 func=func
             )
         else:

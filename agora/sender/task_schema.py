@@ -90,16 +90,17 @@ class TaskSchema(Mapping):
         Returns:
             TaskSchema: An instance of TaskSchema based on the function.
         """
-        schema = schema_from_function(func).get('function', {})
+            schema = schema_from_function(func)
 
         if description is None:
             description = schema.get('description', None)
 
         if input_schema is None:
-            input_schema = schema.get('parameters', None)
+            input_schema = schema.get('input_schema', None)
 
         if output_schema is None:
-            output_schema = schema.get('return', None)
+            output_schema = schema.get('output_schema', None)
+
 
         return TaskSchema(description, input_schema, output_schema)
     

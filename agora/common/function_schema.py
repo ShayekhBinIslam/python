@@ -184,15 +184,12 @@ def schema_from_function(func: Callable, strict: bool = False, known_types: dict
     parsed_schema = langchain.tools.base.create_schema_from_function(func_name, copied_function, parse_docstring=True).model_json_schema()
 
     parsed_schema = {
-        'type': 'function',
-        'function': {
-            'name': func_name,
-            'description': parsed_schema['description'],
-            'parameters': {
-                'type': parsed_schema['type'],
-                'properties': parsed_schema['properties'],
-                'required': parsed_schema['required'],
-            },
+        'name': func_name,
+        'description': parsed_schema['description'],
+        'input_schema': {
+            'type': 'object',
+            'properties': parsed_schema['properties'],
+            'required': parsed_schema['required'],
         }
     }
 
@@ -218,7 +215,8 @@ def schema_from_function(func: Callable, strict: bool = False, known_types: dict
                 if return_type not in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE:
                     raise ValueError(f"Return type {return_type} not supported in JSON schema")
 
-                parsed_schema['function']['return'] = {
+                # TODO: Is it possible to parse dictionaries?
+                parsed_schema['output_schema'] = {
                     'type': PYTHON_TYPE_TO_JSON_SCHEMA_TYPE[return_type],
                     'description': return_description
                 }
