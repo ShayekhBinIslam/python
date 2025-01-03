@@ -47,9 +47,9 @@ class Sender:
             executor (Executor): Executes protocol implementations.
             querier (Querier): Manages querying external services.
             transporter (SenderTransporter): Handles the transportation of messages.
-            protocol_threshold (int, optional): Threshold for protocol selection. Defaults to 5.
-            negotiation_threshold (int, optional): Threshold for negotiation attempts. Defaults to 10.
-            implementation_threshold (int, optional): Threshold for implementation generation. Defaults to 5.
+            protocol_threshold (int, optional): Minimum number of conversations to check existing protocols and see if one is suitable. Defaults to 5.
+            negotiation_threshold (int, optional): Minimum number of conversations to negotiate a new protocol. Defaults to 10.
+            implementation_threshold (int, optional): Minimum number of conversations using a protocol to write an implementation. Defaults to 5.
         """
         self.memory = memory
         self.protocol_picker = protocol_picker
@@ -72,7 +72,7 @@ class Sender:
         executor: Executor = None,
         querier: Querier = None,
         transporter: SenderTransporter = None,
-        storage_path: str = './agora/storage/sender.json',
+        storage_path: str = './.agora/storage/sender.json',
         protocol_threshold: int = 5,
         negotiation_threshold: int = 10,
         implementation_threshold: int = 5
@@ -89,9 +89,9 @@ class Sender:
             querier (Querier, optional): Custom querier. Defaults to None.
             transporter (SenderTransporter, optional): Custom transporter. Defaults to None.
             storage_path (str, optional): Path to the storage file. Defaults to './sender_storage.json'.
-            protocol_threshold (int, optional): Threshold for protocol selection. Defaults to 5.
-            negotiation_threshold (int, optional): Threshold for negotiation attempts. Defaults to 10.
-            implementation_threshold (int, optional): Threshold for implementation generation. Defaults to 5.
+            protocol_threshold (int, optional): Minimum number of conversations to check existing protocols and see if one is suitable. Defaults to 5.
+            negotiation_threshold (int, optional): Minimum number of conversations to negotiate a new protocol. Defaults to 10.
+            implementation_threshold (int, optional): Minimum number of conversations using a protocol to write an implementation. Defaults to 5.
 
         Returns:
             Sender: A configured Sender instance.
