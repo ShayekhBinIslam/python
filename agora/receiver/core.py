@@ -166,6 +166,8 @@ class Receiver:
                 metadata = extract_metadata(protocol_document)
                 self.memory.register_new_protocol(protocol_hash, protocol_sources, protocol_document, metadata)
 
+            self.memory.increment_protocol_conversations(protocol_hash)
+
             protocol = self.memory.get_protocol(protocol_hash)
             protocol_document = protocol.protocol_document
             metadata = protocol.metadata
@@ -182,8 +184,6 @@ class Receiver:
                 raise ProtocolRejectedError(f'{protocol_hash} is not suitable for execution')
 
             implementation = self._get_implementation(protocol_hash)
-
-        self.memory.increment_protocol_conversations(protocol_hash)
 
         if implementation is None:
             return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
