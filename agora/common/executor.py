@@ -2,7 +2,7 @@ from abc import abstractmethod
 import importlib
 from typing import Any, List
 
-from agora.common.toolformers.base import Tool, Conversation
+from agora.common.toolformers.base import Tool, ToolLike, Conversation
 from agora.common.interpreters.restricted import execute_restricted
 
 class Executor:
@@ -13,7 +13,7 @@ class Executor:
         self,
         protocol_id: str,
         code: str,
-        tools: List[Tool],
+        tools: List[ToolLike],
         input_args: list,
         input_kwargs: dict
     ) -> Any:
@@ -22,7 +22,7 @@ class Executor:
         Args:
             protocol_id (str): The protocol identifier.
             code (str): The code to execute.
-            tools (List[Tool]): Available tools for the code.
+            tools (List[ToolLike]): Available tools for the code.
             input_args (list): Positional arguments.
             input_kwargs (dict): Keyword arguments.
 
@@ -36,7 +36,7 @@ class Executor:
         protocol_id: str,
         code: str,
         multiround: bool,
-        tools: List[Tool]
+        tools: List[ToolLike]
     ) -> Conversation:
         """Starts a new conversation using the executor.
 
@@ -44,7 +44,7 @@ class Executor:
             protocol_id (str): The protocol identifier.
             code (str): The code to execute.
             multiround (bool): Whether multiple rounds are allowed.
-            tools (List[Tool]): Tools allowed for execution.
+            tools (List[ToolLike]): Tools allowed for execution.
 
         Returns:
             Conversation: A conversation object for execution.
@@ -58,7 +58,7 @@ class UnsafeExecutor(Executor):
         self,
         protocol_id: str,
         code: str,
-        tools: List[Tool],
+        tools: List[ToolLike],
         input_args: list,
         input_kwargs: dict
     ) -> Any:
@@ -67,13 +67,14 @@ class UnsafeExecutor(Executor):
         Args:
             protocol_id (str): The protocol identifier.
             code (str): The code to execute.
-            tools (List[Tool]): Tools available to the executed code.
+            tools (List[ToolLike]): Tools available to the executed code.
             input_args (list): Positional arguments.
             input_kwargs (dict): Keyword arguments.
 
         Returns:
             Any: The result of the executed code.
         """
+        tools = [Tool.from_toollike(tool) for tool in tools]
         protocol_id = protocol_id.replace('-', '_').replace('.', '_').replace('/', '_')
         spec = importlib.util.spec_from_loader(protocol_id, loader=None)
         loaded_module = importlib.util.module_from_spec(spec)
@@ -92,7 +93,7 @@ class RestrictedExecutor(Executor):
         self,
         protocol_id: str,
         code: str,
-        tools: List[Tool],
+        tools: List[ToolLike],
         input_args: list,
         input_kwargs: dict
     ) -> Any:
@@ -101,13 +102,14 @@ class RestrictedExecutor(Executor):
         Args:
             protocol_id (str): The protocol identifier.
             code (str): The code to execute.
-            tools (List[Tool]): Tools allowed in the environment.
+            tools (List[ToolLike]): Tools allowed in the environment.
             input_args (list): Positional arguments for the function.
             input_kwargs (dict): Keyword arguments for the function.
 
         Returns:
             Any: The result of the execution.
         """
+        tools = [Tool.from_toollike(tool) for tool in tools]
         supported_globals = {
             tool.name : tool.func for tool in tools
         }
@@ -123,7 +125,7 @@ class ExecutorConversation(Conversation):
         protocol_id: str,
         code: str,
         multiround: bool,
-        tools: List[Tool]
+        tools: List[ToolLike]
     ) -> None:
         """Initializes ExecutorConversation.
 
@@ -132,13 +134,13 @@ class ExecutorConversation(Conversation):
             protocol_id (str): The identifier of the protocol.
             code (str): The code to be executed.
             multiround (bool): Whether multiple rounds are allowed.
-            tools (List[Tool]): Tools allowed for execution.
+            tools (List[ToolLike]): Tools allowed for execution.
         """
         self.executor = executor
         self.protocol_id = protocol_id
         self.code = code
         self.multiround = multiround
-        self.tools = tools
+        self.tools = [Tool.from_toollike(tool) for tool in tools]
         self.memory = {} if multiround else None
     
     def __call__(self, message: str, print_output: bool = True) -> Any:
@@ -151,6 +153,7 @@ class ExecutorConversation(Conversation):
         Returns:
             Any: The output from the execution of the code.
         """
+        
         if self.multiround:
             response, self.memory = self.executor(self.protocol_id, self.code, self.tools, [message, dict(self.memory)], {})
         else:
