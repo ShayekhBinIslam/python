@@ -89,7 +89,6 @@ class TaskSchema(Mapping):
             input_schema (Optional[dict], optional): Overrides the input schema. Defaults to None.
             output_schema (Optional[dict], optional): Overrides the output schema. Defaults to None.
             generator (Optional[TaskSchemaGenerator], optional): Used to fill the fields that could not be parsed from function introspection. Defaults to None.
-            strict: Throw an error if the schema cannot be generated from the function. Defaults to True.
 
         Returns:
             TaskSchema: An instance of TaskSchema based on the function.

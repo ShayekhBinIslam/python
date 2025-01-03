@@ -3,7 +3,6 @@ from enum import Enum
 from types import TracebackType
 from typing import Any, Dict, List, Optional
 
-from agora.common.function_schema import schema_from_function
 from agora.utils import compute_hash, extract_metadata
 
 class Suitability(str, Enum):

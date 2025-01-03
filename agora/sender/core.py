@@ -290,6 +290,7 @@ class Sender:
             description (str, optional): A brief description of the task. Defaults to None.
             input_schema (dict, optional): The input schema for the task. Defaults to None.
             output_schema (dict, optional): The output schema for the task. Defaults to None.
+            schema_generator (TaskSchemaGenerator, optional): A generator to fill in missing schema fields. Defaults to None.
 
         Returns:
             Callable: The decorated function.
