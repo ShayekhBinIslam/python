@@ -39,6 +39,9 @@ class JSONStorage(Storage):
 
     def save_memory(self) -> None:
         """Saves current state to the JSON file."""
+        if not self.storage_path.parent.exists():
+            self.storage_path.parent.mkdir(parents=True)
+
         with open(self.storage_path, 'w') as f:
             json.dump(self.data, f, indent=2)
 
