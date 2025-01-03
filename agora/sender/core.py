@@ -218,7 +218,8 @@ class Sender:
             self,
             task_id: str,
             task_schema: TaskSchemaLike,
-            task_data, target: str,
+            task_data: dict,
+            target: str,
             force_no_protocol: bool = False,
             force_llm: bool = False,
         ) -> Any:
