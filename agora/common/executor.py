@@ -113,7 +113,7 @@ class RestrictedExecutor(Executor):
         supported_globals = {
             tool.name : tool.func for tool in tools
         }
-        return execute_restricted(code, supported_imports=['json'], function_name='run', extra_globals=supported_globals, input_args=input_args, input_kwargs=input_kwargs)
+        return execute_restricted(code, supported_imports=['json', 'math', 'typing'], function_name='run', extra_globals=supported_globals, input_args=input_args, input_kwargs=input_kwargs)
 
 
 class ExecutorConversation(Conversation):
