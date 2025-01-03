@@ -135,9 +135,16 @@ class TaskSchema:
         """
         self.description = description
         self.input_schema = input_schema
-        self.input_schema = input_schema
         self.output_schema = output_schema
     
+    @property
+    def fields(self) -> dict:
+        return {
+            'description': self.description,
+            'input_schema': self.input_schema,
+            'output_schema': self.output_schema
+        }
+
     @staticmethod
     def from_json(json_dict : dict) -> 'TaskSchema':
         """
