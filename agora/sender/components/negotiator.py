@@ -77,7 +77,7 @@ class SenderNegotiator:
 
         for i in range(self.max_rounds):
             # print('===NegotiatorGPT===')
-            message = conversation(other_message, print_output=True)
+            message = conversation(other_message, print_output=False)
 
             # print('Checking if we can extract from:', message)
             # print('---------')

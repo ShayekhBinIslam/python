@@ -35,7 +35,7 @@ class ProtocolPicker:
 
         message = 'The protocol is the following:\n\n' + protocol_document + '\n\nThe task is the following:\n\n' + str(task_schema)
 
-        reply = conversation(message, print_output=True)
+        reply = conversation(message, print_output=False)
 
         return 'yes' in reply.lower().strip()[-10:]
 

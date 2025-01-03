@@ -193,7 +193,7 @@ class Querier:
         conversation = self.toolformer.new_conversation(prompt, [send_query_tool, register_output_tool, error_tool], category='conversation')
 
         for _ in range(self.max_messages):
-            conversation(message, print_output=True)
+            conversation(message, print_output=False)
 
             if found_error is not None:
                 raise ExecutionError(found_error)

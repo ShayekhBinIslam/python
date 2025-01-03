@@ -45,7 +45,7 @@ class ReceiverProtocolChecker:
 
         conversation = self.toolformer.new_conversation(prompt, [], category='protocolChecking')
 
-        reply = conversation(message, print_output=True)
+        reply = conversation(message, print_output=False)
 
         # print('Reply:', reply)
         # print(reply.lower().strip()[-10:])

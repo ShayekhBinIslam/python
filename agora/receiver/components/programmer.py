@@ -93,7 +93,7 @@ class ReceiverProgrammer:
         conversation = self.toolformer.new_conversation(prompt, [], category='programming')
 
         for _ in range(self.num_attempts):
-            reply = conversation(message, print_output=True)
+            reply = conversation(message, print_output=False)
 
             implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>', include_tags=False)
 

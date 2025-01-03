@@ -53,7 +53,7 @@ class TaskSchemaGenerator:
 
         conversation = self.toolformer.new_conversation(prompt, [], category='schema')
 
-        reply = conversation(message, print_output=True)
+        reply = conversation(message, print_output=False)
 
         # Extract the schema from the reply
         schema = reply[reply.find('{'):reply.rfind('}')+1]
