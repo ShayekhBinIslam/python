@@ -2,7 +2,7 @@ import json
 import inspect
 from typing import Callable
 
-from agora.common.core import TaskSchema
+from agora.sender.task_schema import TaskSchema
 from agora.common.toolformers.base import Toolformer
 
 SCHEMA_GENERATOR_PROMPT = '''

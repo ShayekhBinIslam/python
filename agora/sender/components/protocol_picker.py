@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
-from agora.common.core import Protocol, TaskSchema, TaskSchemaLike, Suitability
+from agora.common.core import Protocol, Suitability
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.toolformers.base import Toolformer
 
 CHECKER_TASK_PROMPT = 'You are ProtocolCheckerGPT. Your task is to look at the provided protocol and determine if it is expressive ' \

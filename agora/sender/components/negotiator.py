@@ -1,6 +1,7 @@
 from typing import Callable
 
-from agora.common.core import Protocol, TaskSchema, TaskSchemaLike
+from agora.common.core import Protocol
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.toolformers.base import Toolformer
 from agora.utils import extract_metadata, extract_substring
 

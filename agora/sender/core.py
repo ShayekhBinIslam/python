@@ -1,7 +1,8 @@
 import inspect
 from typing import Any, Optional
 
-from agora.common.core import Protocol, TaskSchema, TaskSchemaLike
+from agora.common.core import Protocol
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.errors import ExecutionError
 from agora.common.storage import Storage, JSONStorage
 from agora.sender.components.negotiator import SenderNegotiator

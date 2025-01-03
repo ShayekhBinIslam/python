@@ -4,7 +4,7 @@
 import json
 from typing import Any, Callable, Dict
 
-from agora.common.core import TaskSchema, TaskSchemaLike
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.errors import ExecutionError, ProtocolRejectedError
 from agora.common.toolformers.base import Toolformer, Tool
 
