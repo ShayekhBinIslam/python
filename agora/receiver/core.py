@@ -179,7 +179,7 @@ class Receiver:
 
         return Receiver(storage, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info, implementation_threshold)
     
-    def get_implementation(self, protocol_id: str) -> Optional[str]:
+    def _get_implementation(self, protocol_id: str) -> Optional[str]:
         """
         Retrieves or generates the implementation code for the given protocol.
 
@@ -250,7 +250,7 @@ class Receiver:
             else:
                 raise ProtocolRejectedError(f'{protocol_hash} is not suitable for execution')
 
-            implementation = self.get_implementation(protocol_hash)
+            implementation = self._get_implementation(protocol_hash)
 
         if implementation is None:
             return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)

@@ -308,7 +308,7 @@ class Sender:
         
         return Sender(storage, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
-    def negotiate_protocol(self, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
+    def _negotiate_protocol(self, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
         """Negotiate a protocol based on the task schema and target.
 
         Args:
@@ -331,7 +331,7 @@ class Sender:
 
         return protocol
 
-    def get_suitable_protocol(self, task_id: str, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
+    def _get_suitable_protocol(self, task_id: str, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
         """Retrieve a suitable protocol for the given task and target.
 
         Args:
@@ -354,11 +354,11 @@ class Sender:
                 self.memory.set_default_suitability(protocol_id, task_id, evaluation)
 
         if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > self.negotiation_threshold:
-            suitable_protocol = self.negotiate_protocol(task_schema, target)
+            suitable_protocol = self._negotiate_protocol(task_schema, target)
 
         return suitable_protocol
     
-    def get_implementation(self, protocol_id: str, task_schema):
+    def _get_implementation(self, protocol_id: str, task_schema):
         """Obtain the implementation for a specific protocol and task schema.
 
         Args:
@@ -378,7 +378,7 @@ class Sender:
 
         return implementation
     
-    def run_routine(self, protocol_id: str, implementation: str, task_data, callback):
+    def _run_routine(self, protocol_id: str, implementation: str, task_data, callback):
         """Run the routine associated with a protocol using the provided implementation and task data.
 
         Args:
@@ -434,7 +434,7 @@ class Sender:
         if force_no_protocol:
             protocol = None
         else:
-            protocol = self.get_suitable_protocol(task_id, task_schema, target)
+            protocol = self._get_suitable_protocol(task_id, task_schema, target)
 
         sources = []
 
@@ -459,13 +459,13 @@ class Sender:
             implementation = None
 
             if protocol is not None and not force_llm:
-                implementation = self.get_implementation(protocol.hash, task_schema)
+                implementation = self._get_implementation(protocol.hash, task_schema)
 
             if implementation is None:
                 response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
             else:
                 try:
-                    response = self.run_routine(protocol.hash, implementation, task_data, send_query)
+                    response = self._run_routine(protocol.hash, implementation, task_data, send_query)
                 except ExecutionError as e:
                     # print('Error running routine:', e)
                     # print('Fallback to querier')
