@@ -13,7 +13,7 @@ class ProtocolMemory:
 
         Args:
             storage (Storage): The storage backend to use for managing protocols.
-            **kwargs: Additional keyword arguments to store.
+            **kwargs: Additional keyword arguments, with their default values.
         """
         self.storage = storage
 
@@ -23,7 +23,8 @@ class ProtocolMemory:
             self.storage['protocols'] = {}
 
         for key, value in kwargs.items():
-            self.storage[key] = value
+            if key not in self.storage:
+                self.storage[key] = value
 
         self.storage.save_memory()
 
