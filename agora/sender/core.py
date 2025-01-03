@@ -115,10 +115,11 @@ class Sender:
         
         return Sender(memory, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
-    def _negotiate_protocol(self, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
+    def _negotiate_protocol(self, task_id: str, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
         """Negotiate a protocol based on the task schema and target.
 
         Args:
+            task_id (str): The identifier of the task.
             task_schema (TaskSchemaLike): The schema of the task to be performed.
             target (str): The target for which the protocol is being negotiated.
 
@@ -135,6 +136,8 @@ class Sender:
 
         if protocol is not None:
             self.memory.register_new_protocol(protocol.hash, protocol.protocol_document, protocol.sources, protocol.metadata)
+            self.memory.set_default_suitability(protocol.hash, task_id, protocol.metadata.get('suitability', 'unknown'))
+            self.memory.set_suitability_override(protocol.hash, task_id, target, protocol.metadata.get('suitability', 'adequate'))
 
         return protocol
 
@@ -161,7 +164,7 @@ class Sender:
                 self.memory.set_default_suitability(protocol_id, task_id, evaluation)
 
         if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > self.negotiation_threshold:
-            suitable_protocol = self._negotiate_protocol(task_schema, target)
+            suitable_protocol = self._negotiate_protocol(task_id, task_schema, target)
 
         return suitable_protocol
     
