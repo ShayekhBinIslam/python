@@ -1,10 +1,12 @@
 from collections.abc import Mapping
 import json
-from typing import Callable, Optional, TypeAlias
+from typing import Callable, Optional, TypeAlias, TYPE_CHECKING
 
 from agora.common.errors import SchemaError
 from agora.common.function_schema import schema_from_function
-from agora.sender.schema_generator import TaskSchemaGenerator
+
+if TYPE_CHECKING:
+    from agora.sender.schema_generator import TaskSchemaGenerator
 
 class TaskSchema(Mapping):
     """Defines the schema for a task, including description and input/output schemas."""
@@ -78,7 +80,7 @@ class TaskSchema(Mapping):
         description: Optional[str] = None,
         input_schema: Optional[dict] = None,
         output_schema: Optional[dict] = None,
-        generator: Optional[TaskSchemaGenerator] = None
+        generator: Optional['TaskSchemaGenerator'] = None
     ) -> 'TaskSchema':
         """
         Creates a TaskSchema from a function, inferring schemas if necessary.
