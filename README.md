@@ -5,6 +5,12 @@ The Agora Protocol is a protocol for efficient communication between heterogeneo
 
 **Note**: Agora Python is currently in Open Beta! Expect breaking changes from one version to the other.
 
+## Demo
+
+You can test Agora in your browser on [HuggingFace](https://huggingface.co/spaces/agora-protocol/agora-demo).
+
+![](./assets/agora_demo.gif)
+
 ## Installation
 
 ```
