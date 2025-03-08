@@ -5,15 +5,18 @@ from typing import Any, Dict, List, Optional
 
 from agora.utils import compute_hash, extract_metadata
 
+
 class Suitability(str, Enum):
     """
     Enumeration of protocol suitability statuses.
     """
-    ADEQUATE = 'adequate'
-    INADEQUATE = 'inadequate'
-    PROBABLY_ADEQUATE = 'probably_adequate'
-    PROBABLY_INADEQUATE = 'probably_inadequate'
-    UNKNOWN = 'unknown'
+
+    ADEQUATE = "adequate"
+    INADEQUATE = "inadequate"
+    PROBABLY_ADEQUATE = "probably_adequate"
+    PROBABLY_INADEQUATE = "probably_inadequate"
+    UNKNOWN = "unknown"
+
 
 class Conversation(ABC):
     """
@@ -51,12 +54,12 @@ class Conversation(ABC):
             Conversation: The current conversation instance.
         """
         return self
-    
+
     def __exit__(
         self,
         exc_type: Optional[type],
         exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType]
+        traceback: Optional[TracebackType],
     ) -> None:
         """
         Exits the conversation context, ensuring closure.
@@ -71,6 +74,7 @@ class Conversation(ABC):
         """
         self.close()
 
+
 class Protocol:
     """Represents a protocol document with associated sources and metadata."""
 
@@ -78,7 +82,7 @@ class Protocol:
         self,
         protocol_document: str,
         sources: List[str],
-        metadata: Optional[Dict[str, str]]
+        metadata: Optional[Dict[str, str]],
     ) -> None:
         """Initializes a Protocol.
 
@@ -104,7 +108,7 @@ class Protocol:
             str: The computed hash value.
         """
         return compute_hash(self.protocol_document)
-    
+
     def __str__(self) -> str:
         """
         Returns a string representation of the Protocol.
@@ -112,4 +116,4 @@ class Protocol:
         Returns:
             str: The string representation including hash, sources, metadata, and document.
         """
-        return f'Protocol {self.hash}\nSources: {self.sources}\nMetadata: {self.metadata}\n\n{self.protocol_document}\n\n'
+        return f"Protocol {self.hash}\nSources: {self.sources}\nMetadata: {self.metadata}\n\n{self.protocol_document}\n\n"

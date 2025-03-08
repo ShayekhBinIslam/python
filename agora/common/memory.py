@@ -1,8 +1,9 @@
 from typing import List, Optional
 
 from agora.common.core import Protocol
-from agora.common.storage import Storage
 from agora.common.errors import StorageError
+from agora.common.storage import Storage
+
 
 class ProtocolMemory:
     """Manages protocol-related memory, including registration and retrieval of protocols and their implementations."""
@@ -19,8 +20,8 @@ class ProtocolMemory:
 
         self.storage.load_memory()
 
-        if 'protocols' not in self.storage:
-            self.storage['protocols'] = {}
+        if "protocols" not in self.storage:
+            self.storage["protocols"] = {}
 
         for key, value in kwargs.items():
             if key not in self.storage:
@@ -35,7 +36,7 @@ class ProtocolMemory:
         Returns:
             List[str]: A list containing all registered protocol identifiers.
         """
-        return list(self.storage['protocols'].keys())
+        return list(self.storage["protocols"].keys())
 
     def is_known(self, protocol_id: str) -> bool:
         """
@@ -47,8 +48,8 @@ class ProtocolMemory:
         Returns:
             bool: True if the protocol is registered, False otherwise.
         """
-        return protocol_id in self.storage['protocols']
-    
+        return protocol_id in self.storage["protocols"]
+
     def register_new_protocol(
         self,
         protocol_id: str,
@@ -56,7 +57,7 @@ class ProtocolMemory:
         sources: List[str],
         metadata: dict,
         implementation: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Registers a new protocol with the specified details.
@@ -72,19 +73,19 @@ class ProtocolMemory:
         Raises:
             StorageError: If the protocol is already registered.
         """
-        if protocol_id in self.storage['protocols']:
-            raise StorageError(f'Protocol {protocol_id} already in memory')
-        
+        if protocol_id in self.storage["protocols"]:
+            raise StorageError(f"Protocol {protocol_id} already in memory")
+
         protocol_info = {
-            'document': protocol_document,
-            'sources': sources,
-            'metadata': metadata,
-            'implementation': implementation
+            "document": protocol_document,
+            "sources": sources,
+            "metadata": metadata,
+            "implementation": implementation,
         }
 
         protocol_info.update(kwargs)
 
-        self.storage['protocols'][protocol_id] = protocol_info
+        self.storage["protocols"][protocol_id] = protocol_info
         self.storage.save_memory()
 
     def get_protocol(self, protocol_id: str) -> Optional[Protocol]:
@@ -97,15 +98,19 @@ class ProtocolMemory:
         Returns:
             Optional[Protocol]: The Protocol object if found, else None.
         """
-        if 'protocols' not in self.storage:
+        if "protocols" not in self.storage:
             return None
-        if protocol_id not in self.storage['protocols']:
+        if protocol_id not in self.storage["protocols"]:
             return None
 
-        protocol_info = self.storage['protocols'][protocol_id]
+        protocol_info = self.storage["protocols"][protocol_id]
 
-        return Protocol(protocol_info['document'], protocol_info['sources'], protocol_info['metadata'])
-    
+        return Protocol(
+            protocol_info["document"],
+            protocol_info["sources"],
+            protocol_info["metadata"],
+        )
+
     def get_implementation(self, protocol_id: str) -> Optional[str]:
         """
         Gets the implementation associated with a given protocol ID.
@@ -116,10 +121,10 @@ class ProtocolMemory:
         Returns:
             Optional[str]: The implementation code if available, else None.
         """
-        if protocol_id not in self.storage['protocols']:
+        if protocol_id not in self.storage["protocols"]:
             return None
-        return self.storage['protocols'][protocol_id]['implementation']
-    
+        return self.storage["protocols"][protocol_id]["implementation"]
+
     def register_implementation(self, protocol_id: str, implementation: str):
         """
         Registers an implementation for a specific protocol ID.
@@ -131,9 +136,9 @@ class ProtocolMemory:
         Raises:
             StorageError: If the protocol is not registered.
         """
-        if protocol_id not in self.storage['protocols']:
-            raise StorageError(f'Protocol {protocol_id} not in memory')
-        self.storage['protocols'][protocol_id]['implementation'] = implementation
+        if protocol_id not in self.storage["protocols"]:
+            raise StorageError(f"Protocol {protocol_id} not in memory")
+        self.storage["protocols"][protocol_id]["implementation"] = implementation
         self.storage.save_memory()
 
     def get_extra_field(self, protocol_id: str, field: str, default=None):
@@ -148,10 +153,10 @@ class ProtocolMemory:
         Returns:
             Any: The value of the specified field, or the default if not found.
         """
-        if protocol_id not in self.storage['protocols']:
+        if protocol_id not in self.storage["protocols"]:
             return default
-        return self.storage['protocols'][protocol_id].get(field, default)
-    
+        return self.storage["protocols"][protocol_id].get(field, default)
+
     def set_extra_field(self, protocol_id: str, field: str, value):
         """
         Sets an extra field in a protocol's information.
@@ -164,7 +169,7 @@ class ProtocolMemory:
         Raises:
             StorageError: If the protocol is not registered.
         """
-        if protocol_id not in self.storage['protocols']:
-            raise StorageError(f'Protocol {protocol_id} not in memory')
-        self.storage['protocols'][protocol_id][field] = value
+        if protocol_id not in self.storage["protocols"]:
+            raise StorageError(f"Protocol {protocol_id} not in memory")
+        self.storage["protocols"][protocol_id][field] = value
         self.storage.save_memory()

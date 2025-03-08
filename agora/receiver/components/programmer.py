@@ -1,32 +1,32 @@
 from typing import List
 
-from agora.common.toolformers.base import Tool, ToolLike, Toolformer
+from agora.common.toolformers.base import Tool, Toolformer, ToolLike
 from agora.utils import extract_substring
 
-NO_MULTIROUND_REPLY = ''' reply takes a single argument, "query", which is a string, and must return a string.
-'''
+NO_MULTIROUND_REPLY = """ reply takes a single argument, "query", which is a string, and must return a string.
+"""
 
-MULTIROUND_REPLY = '''reply takes two arguments:
+MULTIROUND_REPLY = """reply takes two arguments:
 - "query", which is a string
 - "memory", which is a dictionary that can be used to store information between rounds (if the protocol requires the receiver to act in multiple rounds).
 It must return a tuple of two elements:
 - A string, which is the response to the query
 - A dictionary, which is the updated memory
-'''
+"""
 
-NO_MULTIROUND_EXAMPLE = '''
+NO_MULTIROUND_EXAMPLE = """
 def reply(query):
     ...
     return response
-'''
+"""
 
-MULTIROUND_EXAMPLE = '''
+MULTIROUND_EXAMPLE = """
 def reply(query, memory):
     ...
     return response, updated_memory
-'''
+"""
 
-TOOL_PROGRAMMER_PROMPT = '''
+TOOL_PROGRAMMER_PROMPT = """
 You are ProtocolProgrammerGPT. Your task is to write a routine that takes a query formatted according to the protocol and returns a response.
 The routine is a Python file that contains a function "reply". {reply_description}
 Depending on the protocol, the routine might be need to perform some actions before returning the response. The user might provide you with a list of \
@@ -46,7 +46,8 @@ Then, write your implementation by writing a code block that contains the tags <
 {example}
 
 </IMPLEMENTATION>
-'''
+"""
+
 
 class ReceiverProgrammer:
     """Generates implementations for protocols based on their specifications."""
@@ -61,7 +62,13 @@ class ReceiverProgrammer:
         self.toolformer = toolformer
         self.num_attempts = num_attempts
 
-    def __call__(self, tools: List[ToolLike], protocol_document: str, multiround: bool, additional_info: str = '') -> str:
+    def __call__(
+        self,
+        tools: List[ToolLike],
+        protocol_document: str,
+        multiround: bool,
+        additional_info: str = "",
+    ) -> str:
         """Generate the implementation code for a given protocol.
 
         Args:
@@ -73,40 +80,51 @@ class ReceiverProgrammer:
         Returns:
             str: The generated implementation code.
         """
-        message = 'Protocol document:\n\n' + protocol_document + '\n\n' + 'Additional functions:\n\n'
+        message = (
+            "Protocol document:\n\n"
+            + protocol_document
+            + "\n\n"
+            + "Additional functions:\n\n"
+        )
 
         if len(tools) == 0:
-            message += 'No additional functions provided'
+            message += "No additional functions provided"
         else:
             for tool in tools:
                 tool = Tool.from_toollike(tool)
-                message += str(tool) + '\n\n'
+                message += str(tool) + "\n\n"
 
         prompt = TOOL_PROGRAMMER_PROMPT.format(
             reply_description=MULTIROUND_REPLY if multiround else NO_MULTIROUND_REPLY,
-            example=MULTIROUND_EXAMPLE if multiround else NO_MULTIROUND_EXAMPLE
+            example=MULTIROUND_EXAMPLE if multiround else NO_MULTIROUND_EXAMPLE,
         )
 
         if additional_info:
-            prompt += '\n\n' + additional_info
+            prompt += "\n\n" + additional_info
 
-        conversation = self.toolformer.new_conversation(prompt, [], category='programming')
+        conversation = self.toolformer.new_conversation(
+            prompt, [], category="programming"
+        )
 
         for _ in range(self.num_attempts):
             reply = conversation(message, print_output=False)
 
-            implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>', include_tags=False)
+            implementation = extract_substring(
+                reply, "<IMPLEMENTATION>", "</IMPLEMENTATION>", include_tags=False
+            )
 
             if implementation is not None:
                 break
 
-            message = 'You have not provided an implementation yet. Please provide one by surrounding it in the tags <IMPLEMENTATION> and </IMPLEMENTATION>.'
+            message = "You have not provided an implementation yet. Please provide one by surrounding it in the tags <IMPLEMENTATION> and </IMPLEMENTATION>."
 
         implementation = implementation.strip()
 
         # Sometimes the LLM leaves the Markdown formatting in the implementation
-        implementation = implementation.replace('```python', '').replace('```', '').strip()
+        implementation = (
+            implementation.replace("```python", "").replace("```", "").strip()
+        )
 
-        implementation = implementation.replace('def reply(', 'def run(')
+        implementation = implementation.replace("def reply(", "def run(")
 
         return implementation

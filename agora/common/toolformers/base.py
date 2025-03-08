@@ -1,9 +1,15 @@
-from abc import ABC, abstractmethod
 import json
+from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, TypeAlias
 
 from agora.common.core import Conversation
-from agora.common.function_schema import DEFAULT_KNOWN_TYPES, PYTHON_TYPE_TO_JSON_SCHEMA_TYPE, schema_from_function, generate_docstring, set_params_and_annotations
+from agora.common.function_schema import (
+    DEFAULT_KNOWN_TYPES,
+    PYTHON_TYPE_TO_JSON_SCHEMA_TYPE,
+    generate_docstring,
+    schema_from_function,
+    set_params_and_annotations,
+)
 
 
 class Tool:
@@ -15,7 +21,7 @@ class Tool:
         description: str,
         args_schema: dict,
         return_schema: dict,
-        func: Callable
+        func: Callable,
     ) -> None:
         """Initializes the Tool.
 
@@ -44,8 +50,8 @@ class Tool:
             "function": {
                 "name": self.name,
                 "description": self.description,
-                "parameters": self.args_schema
-            }
+                "parameters": self.args_schema,
+            },
         }
 
     @staticmethod
@@ -57,8 +63,8 @@ class Tool:
         return_schema: dict = None,
         infer_schema: bool = True,
         inference_known_types: dict = DEFAULT_KNOWN_TYPES,
-        strict_inference: bool = False
-    ) -> 'Tool':
+        strict_inference: bool = False,
+    ) -> "Tool":
         """Create a Tool instance from a given function, optionally inferring schemas.
 
         Args:
@@ -73,41 +79,57 @@ class Tool:
 
         Returns:
             Tool: A new Tool instance based on the provided function.
-        
+
         Raises:
             ValueError: If required parameters are missing when infer_schema is False.
         """
         if infer_schema:
-            schema = schema_from_function(func, known_types=inference_known_types, strict=strict_inference)
+            schema = schema_from_function(
+                func, known_types=inference_known_types, strict=strict_inference
+            )
 
             return Tool(
                 name=name or func.__name__,
-                description=description or schema.get('description', func.__doc__),
-                args_schema=args_schema or schema.get('input_schema', {}),
-                return_schema=schema.get('output_schema', {}),
-                func=func
+                description=description or schema.get("description", func.__doc__),
+                args_schema=args_schema or schema.get("input_schema", {}),
+                return_schema=schema.get("output_schema", {}),
+                func=func,
             )
         else:
             if not infer_schema:
                 if not name:
                     raise ValueError("name must be provided if infer_schema is False")
                 if not description:
-                    raise ValueError("description must be provided if infer_schema is False")
+                    raise ValueError(
+                        "description must be provided if infer_schema is False"
+                    )
                 if not args_schema:
-                    raise ValueError("args_schema must be provided if infer_schema is False")
+                    raise ValueError(
+                        "args_schema must be provided if infer_schema is False"
+                    )
                 if not return_schema:
-                    raise ValueError("return_schema must be provided if infer_schema is False")   
+                    raise ValueError(
+                        "return_schema must be provided if infer_schema is False"
+                    )
 
             return Tool(
                 name=name,
                 description=description,
                 args_schema=args_schema,
                 return_schema=return_schema,
-                func=func
+                func=func,
             )
-        
+
     @staticmethod
-    def from_toollike(tool_like: 'ToolLike', name: Optional[str] = None, description: Optional[str] = None, args_schema: Optional[dict] = None, return_schema: Optional[dict] = None, inference_known_types: Optional[dict] = DEFAULT_KNOWN_TYPES, strict_inference: Optional[bool] = None) -> 'Tool':
+    def from_toollike(
+        tool_like: "ToolLike",
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        args_schema: Optional[dict] = None,
+        return_schema: Optional[dict] = None,
+        inference_known_types: Optional[dict] = DEFAULT_KNOWN_TYPES,
+        strict_inference: Optional[bool] = None,
+    ) -> "Tool":
         """Convert a Tool-like object into a Tool instance.
 
         Args:
@@ -121,7 +143,7 @@ class Tool:
 
         Returns:
             Tool: A new Tool instance based on the Tool-like object.
-        
+
         Raises:
             ValueError: If the Tool-like object is neither a Tool nor a callable.
         """
@@ -136,7 +158,7 @@ class Tool:
                 return_schema=return_schema,
                 infer_schema=True,
                 inference_known_types=inference_known_types,
-                strict_inference=strict_inference
+                strict_inference=strict_inference,
             )
         else:
             raise ValueError("Tool-like object must be either a Tool or a callable")
@@ -151,17 +173,17 @@ class Tool:
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
         params = {}
 
-        for arg_name, arg_schema in self.args_schema['properties'].items():
-            arg_type = inverted_types[arg_schema['type']]
-            arg_description = arg_schema.get('description', '')
+        for arg_name, arg_schema in self.args_schema["properties"].items():
+            arg_type = inverted_types[arg_schema["type"]]
+            arg_description = arg_schema.get("description", "")
 
-            if arg_schema['type'] == 'object':
+            if arg_schema["type"] == "object":
                 arg_description = arg_description.strip()
 
-                if arg_description and not arg_description.endswith('.'):
-                    arg_description += '.'
+                if arg_description and not arg_description.endswith("."):
+                    arg_description += "."
 
-                arg_description += ' Schema:' + json.dumps(arg_schema)
+                arg_description += " Schema:" + json.dumps(arg_schema)
                 arg_description = arg_description.strip()
 
             params[arg_name] = (arg_type, arg_description)
@@ -177,16 +199,16 @@ class Tool:
         """
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
         if self.return_schema:
-            return_type = inverted_types[self.return_schema['type']]
+            return_type = inverted_types[self.return_schema["type"]]
 
-            return_description = self.return_schema.get('description', '')
+            return_description = self.return_schema.get("description", "")
 
-            if self.return_schema['type'] == 'object':
+            if self.return_schema["type"] == "object":
                 return_description = return_description.strip()
-                if return_description and not return_description.endswith('.'):
-                    return_description += '.'
+                if return_description and not return_description.endswith("."):
+                    return_description += "."
 
-                return_description += ' Schema: ' + json.dumps(self.return_schema)
+                return_description += " Schema: " + json.dumps(self.return_schema)
                 return_description = return_description.strip()
 
             return (return_type, return_description)
@@ -200,7 +222,9 @@ class Tool:
         Returns:
             str: The generated docstring.
         """
-        return generate_docstring(self.description, self._args_schema_parsed, self._return_schema_parsed)
+        return generate_docstring(
+            self.description, self._args_schema_parsed, self._return_schema_parsed
+        )
 
     def __str__(self) -> str:
         """Return the string representation of the Tool.
@@ -208,7 +232,7 @@ class Tool:
         Returns:
             str: The string representation.
         """
-        return f'Tool({self.name})\n' + self.docstring
+        return f"Tool({self.name})\n" + self.docstring
 
     def as_documented_python(self) -> str:
         """Export the tool as a documented Python function.
@@ -218,16 +242,16 @@ class Tool:
         """
         inverted_types = {v: k for k, v in PYTHON_TYPE_TO_JSON_SCHEMA_TYPE.items()}
 
-        s = f'def {self.name}('
+        s = f"def {self.name}("
 
         signature_args = []
 
-        for arg_name, arg_schema in self.args_schema['properties'].items():
-            arg_type = inverted_types[arg_schema['type']].__name__
-            signature_args.append(f'{arg_name}: {arg_type}')
+        for arg_name, arg_schema in self.args_schema["properties"].items():
+            arg_type = inverted_types[arg_schema["type"]].__name__
+            signature_args.append(f"{arg_name}: {arg_type}")
 
-        s += ', '.join(signature_args)
-        s += '):\n'
+        s += ", ".join(signature_args)
+        s += "):\n"
 
         s += self.docstring
 
@@ -246,16 +270,21 @@ class Tool:
         else:
             return_type = None
 
-        return set_params_and_annotations(self.name, self.docstring, self._args_schema_parsed, return_type)(self.func)
-        
+        return set_params_and_annotations(
+            self.name, self.docstring, self._args_schema_parsed, return_type
+        )(self.func)
+
 
 ToolLike: TypeAlias = Callable | Tool
+
 
 class Toolformer(ABC):
     """Abstract base class for Toolformers, which manage conversations with tools."""
 
     @abstractmethod
-    def new_conversation(self, prompt: str, tools: List[ToolLike], category: Optional[str] = None) -> Conversation:
+    def new_conversation(
+        self, prompt: str, tools: List[ToolLike], category: Optional[str] = None
+    ) -> Conversation:
         """Starts a new conversation with the given prompt and tools.
 
         Args:
@@ -267,4 +296,3 @@ class Toolformer(ABC):
             Conversation: A Conversation instance managing the interaction.
         """
         pass
-

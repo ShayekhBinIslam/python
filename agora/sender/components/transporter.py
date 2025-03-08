@@ -1,13 +1,21 @@
 from abc import ABC, abstractmethod
-import requests
 from typing import List
+
+import requests
 
 from agora.common.core import Conversation
 from agora.common.errors import ProtocolTransportError
 
+
 class SenderTransporter(ABC):
     @abstractmethod
-    def new_conversation(self, target: str, multiround: bool, protocol_hash: str, protocol_sources: List[str]) -> Conversation:
+    def new_conversation(
+        self,
+        target: str,
+        multiround: bool,
+        protocol_hash: str,
+        protocol_sources: List[str],
+    ) -> Conversation:
         """
         Creates a new conversation with the target.
 
@@ -30,7 +38,7 @@ class SimpleSenderTransporter(SenderTransporter):
             target: str,
             multiround: bool,
             protocol_hash: str,
-            protocol_sources: List[str]
+            protocol_sources: List[str],
         ):
             """
             Initializes a simple external conversation.
@@ -60,43 +68,56 @@ class SimpleSenderTransporter(SenderTransporter):
             if self._conversation_id is None:
                 target_url = self.target
             else:
-                target_url = f'{self.target}/conversations/{self._conversation_id}'
+                target_url = f"{self.target}/conversations/{self._conversation_id}"
 
             raw_query = {
-                'protocolHash': self.protocol_hash,
-                'protocolSources': self.protocol_sources,
-                'body': message
+                "protocolHash": self.protocol_hash,
+                "protocolSources": self.protocol_sources,
+                "body": message,
             }
 
             if self.multiround:
-                raw_query['multiround'] = True
+                raw_query["multiround"] = True
 
             raw_response = requests.post(target_url, json=raw_query)
 
             if raw_response.status_code != 200:
-                raise ProtocolTransportError('Error in external conversation: ' + raw_response.text)
-            
+                raise ProtocolTransportError(
+                    "Error in external conversation: " + raw_response.text
+                )
+
             response = raw_response.json()
 
             if self.multiround and self._conversation_id is None:
-                if 'conversationId' not in response:
-                    raise Exception('Multiround conversation did not return conversationId:', response)
-                self._conversation_id = response['conversationId']
+                if "conversationId" not in response:
+                    raise Exception(
+                        "Multiround conversation did not return conversationId:",
+                        response,
+                    )
+                self._conversation_id = response["conversationId"]
 
-            return {
-                'status': response['status'],
-                'body': response['body']
-            }
+            return {"status": response["status"], "body": response["body"]}
+
         def close(self) -> None:
             """
             Closes the conversation by deleting it from the remote service.
             """
             if self._conversation_id is not None:
-                raw_response = requests.delete(f'{self.target}/conversations/{self._conversation_id}')
+                raw_response = requests.delete(
+                    f"{self.target}/conversations/{self._conversation_id}"
+                )
                 if raw_response.status_code != 200:
-                    raise Exception('Error in closing external conversation:', raw_response.text)
+                    raise Exception(
+                        "Error in closing external conversation:", raw_response.text
+                    )
 
-    def new_conversation(self, target: str, multiround: bool, protocol_hash: str, protocol_sources: List[str]) -> SimpleExternalConversation:
+    def new_conversation(
+        self,
+        target: str,
+        multiround: bool,
+        protocol_hash: str,
+        protocol_sources: List[str],
+    ) -> SimpleExternalConversation:
         """
         Creates a new SimpleExternalConversation instance.
 
@@ -109,5 +130,6 @@ class SimpleSenderTransporter(SenderTransporter):
         Returns:
             SimpleExternalConversation: A new conversation instance.
         """
-        return self.SimpleExternalConversation(target, multiround, protocol_hash, protocol_sources)
-
+        return self.SimpleExternalConversation(
+            target, multiround, protocol_hash, protocol_sources
+        )

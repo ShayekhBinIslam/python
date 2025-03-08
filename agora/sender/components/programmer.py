@@ -1,8 +1,8 @@
-from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.toolformers.base import Toolformer
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.utils import extract_substring
 
-TASK_PROGRAMMER_PROMPT = '''
+TASK_PROGRAMMER_PROMPT = """
 You are ProtocolProgrammerGPT. You will act as an intermediate between a machine (that has a certain input and output schema in JSON) \
 and a remote server that can perform a task following a certain protocol. Your task is to write a routine that takes some task data \
 (which follows the input schema), sends query in a format defined by the protocol, parses it and returns the output according to the output schema so that \
@@ -32,7 +32,8 @@ def send_query(task_data):
   ...
 
 </IMPLEMENTATION>
-'''
+"""
+
 
 class SenderProgrammer:
     """Generates implementations based on task schemas and protocol documents."""
@@ -58,24 +59,36 @@ class SenderProgrammer:
             str: The generated implementation code.
         """
         task_schema = TaskSchema.from_taskschemalike(task_schema)
-        conversation = self.toolformer.new_conversation(TASK_PROGRAMMER_PROMPT, [], category='programming')
-        message = 'JSON schema:\n\n' + str(task_schema) + '\n\n' + 'Protocol document:\n\n' + protocol_document
+        conversation = self.toolformer.new_conversation(
+            TASK_PROGRAMMER_PROMPT, [], category="programming"
+        )
+        message = (
+            "JSON schema:\n\n"
+            + str(task_schema)
+            + "\n\n"
+            + "Protocol document:\n\n"
+            + protocol_document
+        )
 
         for _ in range(self.num_attempts):
             reply = conversation(message, print_output=False)
 
-            implementation = extract_substring(reply, '<IMPLEMENTATION>', '</IMPLEMENTATION>', include_tags=False)
+            implementation = extract_substring(
+                reply, "<IMPLEMENTATION>", "</IMPLEMENTATION>", include_tags=False
+            )
 
             if implementation is not None:
                 break
 
-            message = 'You have not provided an implementation yet. Please provide one by surrounding it in the tags <IMPLEMENTATION> and </IMPLEMENTATION>.'
+            message = "You have not provided an implementation yet. Please provide one by surrounding it in the tags <IMPLEMENTATION> and </IMPLEMENTATION>."
 
         implementation = implementation.strip()
 
         # Sometimes the LLM leaves the Markdown formatting in the implementation
-        implementation = implementation.replace('```python', '').replace('```', '').strip()
+        implementation = (
+            implementation.replace("```python", "").replace("```", "").strip()
+        )
 
-        implementation = implementation.replace('def send_query(', 'def run(')
+        implementation = implementation.replace("def send_query(", "def run(")
 
         return implementation

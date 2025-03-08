@@ -3,12 +3,19 @@ from typing import List
 from agora.common.core import Suitability
 from agora.common.memory import ProtocolMemory
 
+
 class ReceiverMemory(ProtocolMemory):
     """
     Manages memory for the Receiver, including protocol registrations and suitability assessments.
     """
 
-    def register_new_protocol(self, protocol_id: str, protocol_sources: List[str], protocol_document: str, metadata: dict):
+    def register_new_protocol(
+        self,
+        protocol_id: str,
+        protocol_sources: List[str],
+        protocol_document: str,
+        metadata: dict,
+    ):
         """
         Registers a new protocol with given sources, document, and metadata.
 
@@ -25,9 +32,9 @@ class ReceiverMemory(ProtocolMemory):
             metadata,
             None,
             suitability=Suitability.UNKNOWN,
-            conversations=0
+            conversations=0,
         )
-    
+
     def get_protocol_conversations(self, protocol_id: str) -> int:
         """
         Returns the number of conversations associated with a protocol.
@@ -38,8 +45,8 @@ class ReceiverMemory(ProtocolMemory):
         Returns:
             int: The conversation count.
         """
-        return self.get_extra_field(protocol_id, 'conversations', 0)
-    
+        return self.get_extra_field(protocol_id, "conversations", 0)
+
     def increment_protocol_conversations(self, protocol_id: str) -> None:
         """
         Increments the conversation count for the specified protocol.
@@ -47,7 +54,11 @@ class ReceiverMemory(ProtocolMemory):
         Args:
             protocol_id (str): The identifier of the protocol.
         """
-        self.set_extra_field(protocol_id, 'conversations', self.get_protocol_conversations(protocol_id) + 1)
+        self.set_extra_field(
+            protocol_id,
+            "conversations",
+            self.get_protocol_conversations(protocol_id) + 1,
+        )
 
     def set_suitability(self, protocol_id: str, suitability: Suitability) -> None:
         """
@@ -57,7 +68,7 @@ class ReceiverMemory(ProtocolMemory):
             protocol_id (str): The identifier of the protocol.
             suitability (Suitability): The new suitability value.
         """
-        super().set_extra_field(protocol_id, 'suitability', suitability)
+        super().set_extra_field(protocol_id, "suitability", suitability)
 
     def get_suitability(self, protocol_id: str) -> Suitability:
         """
@@ -69,4 +80,4 @@ class ReceiverMemory(ProtocolMemory):
         Returns:
             Suitability: The current suitability status.
         """
-        return self.get_extra_field(protocol_id, 'suitability', Suitability.UNKNOWN)
+        return self.get_extra_field(protocol_id, "suitability", Suitability.UNKNOWN)

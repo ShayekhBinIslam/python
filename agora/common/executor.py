@@ -1,9 +1,10 @@
-from abc import abstractmethod
 import importlib
+from abc import abstractmethod
 from typing import Any, List
 
-from agora.common.toolformers.base import Tool, ToolLike, Conversation
 from agora.common.interpreters.restricted import execute_restricted
+from agora.common.toolformers.base import Conversation, Tool, ToolLike
+
 
 class Executor:
     """Abstract base class for executors that run protocol implementations."""
@@ -15,7 +16,7 @@ class Executor:
         code: str,
         tools: List[ToolLike],
         input_args: list,
-        input_kwargs: dict
+        input_kwargs: dict,
     ) -> Any:
         """Executes code with provided tools and arguments.
 
@@ -32,11 +33,7 @@ class Executor:
         pass
 
     def new_conversation(
-        self,
-        protocol_id: str,
-        code: str,
-        multiround: bool,
-        tools: List[ToolLike]
+        self, protocol_id: str, code: str, multiround: bool, tools: List[ToolLike]
     ) -> Conversation:
         """Starts a new conversation using the executor.
 
@@ -51,6 +48,7 @@ class Executor:
         """
         return ExecutorConversation(self, protocol_id, code, multiround, tools)
 
+
 class UnsafeExecutor(Executor):
     """Executes code in an unsafe environment, allowing unrestricted operations."""
 
@@ -60,7 +58,7 @@ class UnsafeExecutor(Executor):
         code: str,
         tools: List[ToolLike],
         input_args: list,
-        input_kwargs: dict
+        input_kwargs: dict,
     ) -> Any:
         """Executes code using Python's importlib without restrictions.
 
@@ -75,7 +73,7 @@ class UnsafeExecutor(Executor):
             Any: The result of the executed code.
         """
         tools = [Tool.from_toollike(tool) for tool in tools]
-        protocol_id = protocol_id.replace('-', '_').replace('.', '_').replace('/', '_')
+        protocol_id = protocol_id.replace("-", "_").replace(".", "_").replace("/", "_")
         spec = importlib.util.spec_from_loader(protocol_id, loader=None)
         loaded_module = importlib.util.module_from_spec(spec)
 
@@ -85,7 +83,8 @@ class UnsafeExecutor(Executor):
             loaded_module.__dict__[tool.name] = tool.func
 
         return loaded_module.run(*input_args, **input_kwargs)
-    
+
+
 class RestrictedExecutor(Executor):
     """Executes code in a restricted environment to ensure safety."""
 
@@ -95,7 +94,7 @@ class RestrictedExecutor(Executor):
         code: str,
         tools: List[ToolLike],
         input_args: list,
-        input_kwargs: dict
+        input_kwargs: dict,
     ) -> Any:
         """Executes the code using a restricted interpreter with limited globals.
 
@@ -110,10 +109,15 @@ class RestrictedExecutor(Executor):
             Any: The result of the execution.
         """
         tools = [Tool.from_toollike(tool) for tool in tools]
-        supported_globals = {
-            tool.name : tool.func for tool in tools
-        }
-        return execute_restricted(code, supported_imports=['json', 'math', 'typing'], function_name='run', extra_globals=supported_globals, input_args=input_args, input_kwargs=input_kwargs)
+        supported_globals = {tool.name: tool.func for tool in tools}
+        return execute_restricted(
+            code,
+            supported_imports=["json", "math", "typing"],
+            function_name="run",
+            extra_globals=supported_globals,
+            input_args=input_args,
+            input_kwargs=input_kwargs,
+        )
 
 
 class ExecutorConversation(Conversation):
@@ -125,7 +129,7 @@ class ExecutorConversation(Conversation):
         protocol_id: str,
         code: str,
         multiround: bool,
-        tools: List[ToolLike]
+        tools: List[ToolLike],
     ) -> None:
         """Initializes ExecutorConversation.
 
@@ -142,7 +146,7 @@ class ExecutorConversation(Conversation):
         self.multiround = multiround
         self.tools = [Tool.from_toollike(tool) for tool in tools]
         self.memory = {} if multiround else None
-    
+
     def __call__(self, message: str, print_output: bool = True) -> Any:
         """Processes a message by executing the implementation code.
 
@@ -153,13 +157,21 @@ class ExecutorConversation(Conversation):
         Returns:
             Any: The output from the execution of the code.
         """
-        
+
         if self.multiround:
-            response, self.memory = self.executor(self.protocol_id, self.code, self.tools, [message, dict(self.memory)], {})
+            response, self.memory = self.executor(
+                self.protocol_id,
+                self.code,
+                self.tools,
+                [message, dict(self.memory)],
+                {},
+            )
         else:
-            response = self.executor(self.protocol_id, self.code, self.tools, [message], {})
+            response = self.executor(
+                self.protocol_id, self.code, self.tools, [message], {}
+            )
 
         if print_output:
             print(response)
-        
+
         return response

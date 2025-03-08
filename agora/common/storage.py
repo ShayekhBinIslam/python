@@ -1,8 +1,9 @@
+import json
 from abc import ABC, abstractmethod
 from collections.abc import MutableMapping
-import json
 from pathlib import Path
 from typing import Any, Iterator
+
 
 class Storage(ABC, MutableMapping):
     """Abstract base class for a key-value storage.
@@ -14,7 +15,7 @@ class Storage(ABC, MutableMapping):
     def save_memory(self) -> None:
         """Saves current state to the underlying storage mechanism."""
         pass
-    
+
     @abstractmethod
     def load_memory(self) -> None:
         """Loads state from the underlying storage mechanism."""
@@ -42,14 +43,14 @@ class JSONStorage(Storage):
         if not self.storage_path.parent.exists():
             self.storage_path.parent.mkdir(parents=True)
 
-        with open(self.storage_path, 'w') as f:
+        with open(self.storage_path, "w") as f:
             json.dump(self.data, f, indent=2)
 
     def load_memory(self) -> None:
         """Loads the state from the JSON file."""
         if not self.storage_path.exists():
             self.save_memory()
-        with open(self.storage_path, 'r') as f:
+        with open(self.storage_path, "r") as f:
             self.data = json.load(f)
 
     def __getitem__(self, key: str) -> Any:
@@ -85,7 +86,7 @@ class JSONStorage(Storage):
 
         if self.autosave:
             self.save_memory()
-    
+
     def __iter__(self) -> Iterator[str]:
         """Iterates over stored keys.
 
@@ -93,7 +94,7 @@ class JSONStorage(Storage):
             Iterator[str]: An iterator over the keys.
         """
         return iter(self.data)
-    
+
     def __len__(self) -> int:
         """Returns the number of stored items.
 
@@ -101,7 +102,7 @@ class JSONStorage(Storage):
             int: The count of items.
         """
         return len(self.data)
-    
+
     def __contains__(self, key: object) -> bool:
         """Checks if a key is contained.
 
@@ -112,11 +113,11 @@ class JSONStorage(Storage):
             bool: True if the key exists, False otherwise.
         """
         return key in self.data
-    
+
     def __str__(self) -> str:
         """Returns a string representation of this storage.
 
         Returns:
             str: String describing the JSONStorage path.
         """
-        return f'JSONStorage({self.storage_path})'
+        return f"JSONStorage({self.storage_path})"

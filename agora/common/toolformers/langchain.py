@@ -1,16 +1,18 @@
 from typing import List, Optional
 
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.tools import tool as function_to_tool
 from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import create_react_agent
 
 from agora.common.toolformers.base import Conversation, Tool, Toolformer, ToolLike
-from langchain_core.tools import tool as function_to_tool
 
 
 class LangChainConversation(Conversation):
-    def __init__(self, agent: CompiledGraph, messages: List[str], category: Optional[str] = None) -> None:
+    def __init__(
+        self, agent: CompiledGraph, messages: List[str], category: Optional[str] = None
+    ) -> None:
         """Initializes a LangChainConversation instance.
 
         Args:
@@ -33,12 +35,14 @@ class LangChainConversation(Conversation):
             str: The concatenated AI response.
         """
         self.messages.append(HumanMessage(content=message))
-        final_message = ''
+        final_message = ""
 
         aggregate = None
 
-        for chunk in self.agent.stream({'messages': self.messages}, stream_mode='values'):
-            for message in chunk['messages']:
+        for chunk in self.agent.stream(
+            {"messages": self.messages}, stream_mode="values"
+        ):
+            for message in chunk["messages"]:
                 if isinstance(message, AIMessage):
                     content = message.content
                     if isinstance(content, str):
@@ -47,7 +51,7 @@ class LangChainConversation(Conversation):
                         for content_chunk in content:
                             if isinstance(content_chunk, str):
                                 if print_output:
-                                    print(content_chunk, end='')
+                                    print(content_chunk, end="")
                                 final_message += content_chunk
 
             aggregate = chunk if aggregate is None else (aggregate + chunk)
@@ -58,7 +62,8 @@ class LangChainConversation(Conversation):
         self.messages.append(AIMessage(content=final_message))
 
         return final_message
-    
+
+
 class LangChainToolformer(Toolformer):
     def __init__(self, model: BaseChatModel):
         """Initializes a LangChainToolformer.
@@ -67,8 +72,10 @@ class LangChainToolformer(Toolformer):
             model (BaseChatModel): The underlying language model for processing.
         """
         self.model = model
-    
-    def new_conversation(self, prompt: str, tools: List[ToolLike], category: Optional[str] = None) -> Conversation:
+
+    def new_conversation(
+        self, prompt: str, tools: List[ToolLike], category: Optional[str] = None
+    ) -> Conversation:
         """Creates a new conversation using the provided prompt and tools.
 
         Args:
@@ -82,5 +89,5 @@ class LangChainToolformer(Toolformer):
         tools = [Tool.from_toollike(tool) for tool in tools]
         tools = [function_to_tool(tool.as_annotated_function()) for tool in tools]
         agent_executor = create_react_agent(self.model, tools)
-        
+
         return LangChainConversation(agent_executor, [SystemMessage(prompt)], category)

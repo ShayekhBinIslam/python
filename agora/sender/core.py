@@ -2,22 +2,23 @@ import inspect
 from typing import Any, Optional
 
 from agora.common.core import Protocol
-from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.common.errors import ExecutionError
-from agora.common.storage import Storage, JSONStorage
+from agora.common.executor import Executor, RestrictedExecutor
+from agora.common.storage import JSONStorage, Storage
+from agora.common.toolformers.base import Tool
 from agora.sender.components.negotiator import SenderNegotiator
 from agora.sender.components.programmer import SenderProgrammer
 from agora.sender.components.protocol_picker import ProtocolPicker
 from agora.sender.components.querier import Querier
-from agora.sender.components.transporter import SenderTransporter, SimpleSenderTransporter
-from agora.common.executor import Executor, RestrictedExecutor
-
-from agora.common.toolformers.base import Tool
-
+from agora.sender.components.transporter import (
+    SenderTransporter,
+    SimpleSenderTransporter,
+)
 from agora.sender.memory import SenderMemory
 from agora.sender.schema_generator import TaskSchemaGenerator
-
+from agora.sender.task_schema import TaskSchema, TaskSchemaLike
 from agora.utils import encode_as_data_uri
+
 
 class Sender:
     """
@@ -25,18 +26,18 @@ class Sender:
     """
 
     def __init__(
-            self,
-            memory: SenderMemory,
-            protocol_picker: ProtocolPicker,
-            negotiator: SenderNegotiator,
-            programmer: SenderProgrammer,
-            executor: Executor,
-            querier: Querier,
-            transporter: SenderTransporter,
-            protocol_threshold: int = 5,
-            negotiation_threshold: int = 10,
-            implementation_threshold: int = 5
-        ):
+        self,
+        memory: SenderMemory,
+        protocol_picker: ProtocolPicker,
+        negotiator: SenderNegotiator,
+        programmer: SenderProgrammer,
+        executor: Executor,
+        querier: Querier,
+        transporter: SenderTransporter,
+        protocol_threshold: int = 5,
+        negotiation_threshold: int = 10,
+        implementation_threshold: int = 5,
+    ):
         """Initialize the Sender with the necessary components and thresholds.
 
         Args:
@@ -72,10 +73,10 @@ class Sender:
         executor: Executor = None,
         querier: Querier = None,
         transporter: SenderTransporter = None,
-        storage_path: str = './.agora/storage/sender.json',
+        storage_path: str = "./.agora/storage/sender.json",
         protocol_threshold: int = 5,
         negotiation_threshold: int = 10,
-        implementation_threshold: int = 5
+        implementation_threshold: int = 5,
     ):
         """Create a default Sender instance with optional custom components.
 
@@ -112,10 +113,23 @@ class Sender:
             querier = Querier(toolformer)
         if transporter is None:
             transporter = SimpleSenderTransporter()
-        
-        return Sender(memory, protocol_picker, negotiator, programmer, executor, querier, transporter, protocol_threshold, negotiation_threshold, implementation_threshold)
 
-    def _negotiate_protocol(self, task_id: str, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
+        return Sender(
+            memory,
+            protocol_picker,
+            negotiator,
+            programmer,
+            executor,
+            querier,
+            transporter,
+            protocol_threshold,
+            negotiation_threshold,
+            implementation_threshold,
+        )
+
+    def _negotiate_protocol(
+        self, task_id: str, task_schema: TaskSchemaLike, target: str
+    ) -> Optional[Protocol]:
         """Negotiate a protocol based on the task schema and target.
 
         Args:
@@ -126,7 +140,10 @@ class Sender:
         Returns:
             Optional[Protocol]: The negotiated Protocol object if successful, else None.
         """
-        with self.transporter.new_conversation(target, True, 'negotiation', None) as external_conversation:
+        with self.transporter.new_conversation(
+            target, True, "negotiation", None
+        ) as external_conversation:
+
             def send_query(query):
                 response = external_conversation(query)
                 # print('Response to negotiator:', response)
@@ -135,13 +152,27 @@ class Sender:
             protocol = self.negotiator(task_schema, send_query)
 
         if protocol is not None:
-            self.memory.register_new_protocol(protocol.hash, protocol.protocol_document, protocol.sources, protocol.metadata)
-            self.memory.set_default_suitability(protocol.hash, task_id, protocol.metadata.get('suitability', 'unknown'))
-            self.memory.set_suitability_override(protocol.hash, task_id, target, protocol.metadata.get('suitability', 'adequate'))
+            self.memory.register_new_protocol(
+                protocol.hash,
+                protocol.protocol_document,
+                protocol.sources,
+                protocol.metadata,
+            )
+            self.memory.set_default_suitability(
+                protocol.hash, task_id, protocol.metadata.get("suitability", "unknown")
+            )
+            self.memory.set_suitability_override(
+                protocol.hash,
+                task_id,
+                target,
+                protocol.metadata.get("suitability", "adequate"),
+            )
 
         return protocol
 
-    def _get_suitable_protocol(self, task_id: str, task_schema: TaskSchemaLike, target: str) -> Optional[Protocol]:
+    def _get_suitable_protocol(
+        self, task_id: str, task_schema: TaskSchemaLike, target: str
+    ) -> Optional[Protocol]:
         """Retrieve a suitable protocol for the given task and target.
 
         Args:
@@ -155,19 +186,31 @@ class Sender:
         # Look in the memory
         suitable_protocol = self.memory.get_suitable_protocol(task_id, target)
 
-        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > self.protocol_threshold:
+        if (
+            suitable_protocol is None
+            and self.memory.get_task_conversations(task_id, target)
+            > self.protocol_threshold
+        ):
             protocol_ids = self.memory.get_unclassified_protocols(task_id)
-            protocols = [self.memory.get_protocol(protocol_id) for protocol_id in protocol_ids]
-            suitable_protocol, protocol_evaluations = self.protocol_picker.pick_protocol(task_schema, protocols)
+            protocols = [
+                self.memory.get_protocol(protocol_id) for protocol_id in protocol_ids
+            ]
+            suitable_protocol, protocol_evaluations = (
+                self.protocol_picker.pick_protocol(task_schema, protocols)
+            )
 
             for protocol_id, evaluation in protocol_evaluations.items():
                 self.memory.set_default_suitability(protocol_id, task_id, evaluation)
 
-        if suitable_protocol is None and self.memory.get_task_conversations(task_id, target) > self.negotiation_threshold:
+        if (
+            suitable_protocol is None
+            and self.memory.get_task_conversations(task_id, target)
+            > self.negotiation_threshold
+        ):
             suitable_protocol = self._negotiate_protocol(task_id, task_schema, target)
 
         return suitable_protocol
-    
+
     def _get_implementation(self, protocol_id: str, task_schema):
         """Obtain the implementation for a specific protocol and task schema.
 
@@ -181,13 +224,17 @@ class Sender:
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
-        if implementation is None and self.memory.get_protocol_conversations(protocol_id) > self.implementation_threshold:
+        if (
+            implementation is None
+            and self.memory.get_protocol_conversations(protocol_id)
+            > self.implementation_threshold
+        ):
             protocol = self.memory.get_protocol(protocol_id)
             implementation = self.programmer(task_schema, protocol.protocol_document)
             self.memory.register_implementation(protocol_id, implementation)
 
         return implementation
-    
+
     def _run_routine(self, protocol_id: str, implementation: str, task_data, callback):
         """Run the routine associated with a protocol using the provided implementation and task data.
 
@@ -200,6 +247,7 @@ class Sender:
         Returns:
             Any: The result of the routine execution.
         """
+
         def send_to_server(query: str):
             """Send a query to the other service based on a protocol document.
 
@@ -212,21 +260,23 @@ class Sender:
 
             response = callback(query)
             # print('Tool run_routine responded with:', response)
-            return response['body']
+            return response["body"]
 
-        send_query_tool = Tool.from_function(send_to_server) # TODO: Handle errors
+        send_query_tool = Tool.from_function(send_to_server)  # TODO: Handle errors
 
-        return self.executor(protocol_id, implementation, [send_query_tool], [task_data], {})
+        return self.executor(
+            protocol_id, implementation, [send_query_tool], [task_data], {}
+        )
 
     def execute_task(
-            self,
-            task_id: str,
-            task_schema: TaskSchemaLike,
-            task_data: dict,
-            target: str,
-            force_no_protocol: bool = False,
-            force_llm: bool = False,
-        ) -> Any:
+        self,
+        task_id: str,
+        task_schema: TaskSchemaLike,
+        task_data: dict,
+        target: str,
+        force_no_protocol: bool = False,
+        force_llm: bool = False,
+    ) -> Any:
         """Execute a task by selecting and running an appropriate protocol or falling back to querying.
 
         Args:
@@ -259,10 +309,11 @@ class Sender:
 
         with self.transporter.new_conversation(
             target,
-            protocol.metadata.get('multiround', True) if protocol else True,
+            protocol.metadata.get("multiround", True) if protocol else True,
             protocol.hash if protocol else None,
-            sources
+            sources,
         ) as external_conversation:
+
             def send_query(query):
                 response = external_conversation(query)
                 # print('Response to sender:', response)
@@ -274,19 +325,38 @@ class Sender:
                 implementation = self._get_implementation(protocol.hash, task_schema)
 
             if implementation is None:
-                response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
+                response = self.querier(
+                    task_schema,
+                    task_data,
+                    protocol.protocol_document if protocol else None,
+                    send_query,
+                )
             else:
                 try:
-                    response = self._run_routine(protocol.hash, implementation, task_data, send_query)
+                    response = self._run_routine(
+                        protocol.hash, implementation, task_data, send_query
+                    )
                 except ExecutionError as e:
                     # print('Error running routine:', e)
                     # print('Fallback to querier')
 
-                    response = self.querier(task_schema, task_data, protocol.protocol_document if protocol else None, send_query)
+                    response = self.querier(
+                        task_schema,
+                        task_data,
+                        protocol.protocol_document if protocol else None,
+                        send_query,
+                    )
 
             return response
 
-    def task(self, task_id: Optional[str] = None, description: Optional[str] = None, input_schema: Optional[dict] = None, output_schema: Optional[dict] = None, schema_generator: Optional[TaskSchemaGenerator] = None):
+    def task(
+        self,
+        task_id: Optional[str] = None,
+        description: Optional[str] = None,
+        input_schema: Optional[dict] = None,
+        output_schema: Optional[dict] = None,
+        schema_generator: Optional[TaskSchemaGenerator] = None,
+    ):
         """Decorator to define a task with optional schemas and description.
 
         Args:
@@ -299,14 +369,20 @@ class Sender:
         Returns:
             Callable: The decorated function.
         """
+
         def wrapper(func):
             nonlocal task_id
 
             if task_id is None:
                 task_id = func.__name__
-            
+
             try:
-                task_schema = TaskSchema.from_function(func, description=description, input_schema=input_schema, output_schema=output_schema)
+                task_schema = TaskSchema.from_function(
+                    func,
+                    description=description,
+                    input_schema=input_schema,
+                    output_schema=output_schema,
+                )
             except Exception as e:
                 if schema_generator is None:
                     raise e
@@ -322,16 +398,22 @@ class Sender:
 
                 return self.execute_task(task_id, task_schema, task_data, target)
 
-            if 'target' in task_schema.input_schema['required']:
-                raise ValueError('The task schema should not require a target field')
+            if "target" in task_schema.input_schema["required"]:
+                raise ValueError("The task schema should not require a target field")
 
             tool_input_schema = dict(task_schema.input_schema)
-            tool_input_schema['properties']['target'] = {
-                'type': 'string',
-                'description': 'The URL of the target system or service for the task'
+            tool_input_schema["properties"]["target"] = {
+                "type": "string",
+                "description": "The URL of the target system or service for the task",
             }
 
-            tool = Tool(wrapped.__name__, task_schema.description, tool_input_schema, task_schema.output_schema, wrapped)
+            tool = Tool(
+                wrapped.__name__,
+                task_schema.description,
+                tool_input_schema,
+                task_schema.output_schema,
+                wrapped,
+            )
 
             return tool.as_annotated_function()
 

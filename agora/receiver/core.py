@@ -1,17 +1,15 @@
 from typing import List, Optional
-from agora.common.core import Suitability
 
-from agora.common.toolformers.base import Conversation, ToolLike
+from agora.common.core import Suitability
 from agora.common.errors import ProtocolRejectedError, ProtocolRetrievalError
-from agora.common.storage import Storage, JSONStorage
 from agora.common.executor import Executor, RestrictedExecutor
-from agora.receiver.components.responder import Responder
-from agora.receiver.components.protocol_checker import ReceiverProtocolChecker
+from agora.common.storage import JSONStorage, Storage
+from agora.common.toolformers.base import Conversation, ToolLike
 from agora.receiver.components.negotiator import ReceiverNegotiator
 from agora.receiver.components.programmer import ReceiverProgrammer
-
+from agora.receiver.components.protocol_checker import ReceiverProtocolChecker
+from agora.receiver.components.responder import Responder
 from agora.receiver.memory import ReceiverMemory
-
 from agora.utils import download_and_verify_protocol, extract_metadata
 
 
@@ -19,6 +17,7 @@ class Receiver:
     """
     Handles receiving and processing protocols, including negotiation and execution.
     """
+
     def __init__(
         self,
         memory: ReceiverMemory,
@@ -28,8 +27,8 @@ class Receiver:
         programmer: ReceiverProgrammer,
         executor: Executor,
         tools: List[ToolLike],
-        additional_info: str = '',
-        implementation_threshold: int = 5
+        additional_info: str = "",
+        implementation_threshold: int = 5,
     ):
         """
         Initializes the Receiver with needed components and configurations.
@@ -65,10 +64,10 @@ class Receiver:
         programmer: ReceiverProgrammer = None,
         executor: Executor = None,
         tools: List[ToolLike] = None,
-        additional_info: str = '',
-        storage_path: str = './.agora/storage/receiver.json',
-        implementation_threshold: int = 5
-    ) -> 'Receiver':
+        additional_info: str = "",
+        storage_path: str = "./.agora/storage/receiver.json",
+        implementation_threshold: int = 5,
+    ) -> "Receiver":
         """
         Creates a default Receiver instance with customizable components.
 
@@ -103,15 +102,25 @@ class Receiver:
 
         if negotiator is None:
             negotiator = ReceiverNegotiator(toolformer)
-        
+
         if programmer is None:
             programmer = ReceiverProgrammer(toolformer)
 
         if executor is None:
             executor = RestrictedExecutor()
 
-        return Receiver(memory, responder, protocol_checker, negotiator, programmer, executor, tools, additional_info, implementation_threshold)
-    
+        return Receiver(
+            memory,
+            responder,
+            protocol_checker,
+            negotiator,
+            programmer,
+            executor,
+            tools,
+            additional_info,
+            implementation_threshold,
+        )
+
     def _get_implementation(self, protocol_id: str) -> Optional[str]:
         """
         Retrieves or generates the implementation code for the given protocol.
@@ -125,14 +134,24 @@ class Receiver:
         # Check if a routine exists and eventually create it
         implementation = self.memory.get_implementation(protocol_id)
 
-        if implementation is None and self.memory.get_protocol_conversations(protocol_id) >= self.implementation_threshold:
+        if (
+            implementation is None
+            and self.memory.get_protocol_conversations(protocol_id)
+            >= self.implementation_threshold
+        ):
             protocol = self.memory.get_protocol(protocol_id)
-            implementation = self.programmer(self.tools, protocol.protocol_document, protocol.metadata.get('multiround', False))
+            implementation = self.programmer(
+                self.tools,
+                protocol.protocol_document,
+                protocol.metadata.get("multiround", False),
+            )
             self.memory.register_implementation(protocol_id, implementation)
 
         return implementation
 
-    def create_conversation(self, protocol_hash: str, protocol_sources: List[str]) -> Conversation:
+    def create_conversation(
+        self, protocol_hash: str, protocol_sources: List[str]
+    ) -> Conversation:
         """
         Creates a new conversation based on the protocol hash and sources.
 
@@ -147,7 +166,7 @@ class Receiver:
             ProtocolRetrievalError: If unable to download the protocol.
             ProtocolRejectedError: If the protocol is deemed inadequate.
         """
-        if protocol_hash == 'negotiation':
+        if protocol_hash == "negotiation":
             return self.negotiator.create_conversation(self.tools, self.additional_info)
 
         protocol_document = None
@@ -156,15 +175,19 @@ class Receiver:
         if protocol_hash is not None:
             if not self.memory.is_known(protocol_hash):
                 for protocol_source in protocol_sources:
-                    protocol_document = download_and_verify_protocol(protocol_hash, protocol_source)
+                    protocol_document = download_and_verify_protocol(
+                        protocol_hash, protocol_source
+                    )
                     if protocol_document is not None:
                         break
 
                 if protocol_document is None:
-                    raise ProtocolRetrievalError('Failed to download protocol')
-                
+                    raise ProtocolRetrievalError("Failed to download protocol")
+
                 metadata = extract_metadata(protocol_document)
-                self.memory.register_new_protocol(protocol_hash, protocol_sources, protocol_document, metadata)
+                self.memory.register_new_protocol(
+                    protocol_hash, protocol_sources, protocol_document, metadata
+                )
 
             self.memory.increment_protocol_conversations(protocol_hash)
 
@@ -179,13 +202,24 @@ class Receiver:
                     self.memory.set_suitability(protocol_hash, Suitability.INADEQUATE)
 
             if self.memory.get_suitability(protocol_hash) == Suitability.ADEQUATE:
-                protocol_document = self.memory.get_protocol(protocol_hash).protocol_document
+                protocol_document = self.memory.get_protocol(
+                    protocol_hash
+                ).protocol_document
             else:
-                raise ProtocolRejectedError(f'{protocol_hash} is not suitable for execution')
+                raise ProtocolRejectedError(
+                    f"{protocol_hash} is not suitable for execution"
+                )
 
             implementation = self._get_implementation(protocol_hash)
 
         if implementation is None:
-            return self.responder.create_conversation(protocol_document, self.tools, self.additional_info)
+            return self.responder.create_conversation(
+                protocol_document, self.tools, self.additional_info
+            )
         else:
-            return self.executor.new_conversation(protocol_hash, implementation, metadata.get('multiround', False), self.tools)
+            return self.executor.new_conversation(
+                protocol_hash,
+                implementation,
+                metadata.get("multiround", False),
+                self.tools,
+            )
